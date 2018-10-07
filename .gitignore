@@ -1,0 +1,13 @@
+.DS_Store
+.settings/
+project/project/
+target/
+bin/
+logs/
+.tmpBin/
+.cache-main
+.classpath
+.project
+.idea/
+*.iml
+.cache-tests

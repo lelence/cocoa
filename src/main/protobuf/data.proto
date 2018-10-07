@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.maogogo.cocoa";
+package com.maogogo.cocoa;
+
+import "google/protobuf/wrappers.proto";
+
+message CommonSettings {
+    int32 port = 1;
+}
