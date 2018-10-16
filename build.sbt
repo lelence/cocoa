@@ -2,6 +2,7 @@ import Settings._
 import Dependencies._
 
 lazy val common = (project in file("common"))
+  .enablePlugins(AutomateHeaderPlugin)
   .dependsOn(proto)
   .settings(
     basicSettings,
@@ -9,6 +10,7 @@ lazy val common = (project in file("common"))
   )
 
 lazy val rest = (project in file("rest"))
+  .enablePlugins(AutomateHeaderPlugin)
   .dependsOn(common)
   .enablePlugins(JavaServerAppPackaging)
   .settings(
@@ -17,6 +19,7 @@ lazy val rest = (project in file("rest"))
   )
 
 lazy val rpc = (project in file("rpc"))
+  .enablePlugins(AutomateHeaderPlugin)
   .dependsOn(common)
   .enablePlugins(JavaAppPackaging)
   .settings(
