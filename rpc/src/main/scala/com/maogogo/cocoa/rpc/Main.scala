@@ -29,10 +29,26 @@ object Main extends App {
   //
   //  println(config)
   //
-  //  implicit val system = ActorSystem("aa", config)
+  implicit val system = ActorSystem("aa", ConfigFactory.load())
   //  // val cluster = Cluster(system)
+
+  //  val hello = new HelloActor("aaaa")
+
+  //  val ss = Props(new HelloActor("aaaa"))
   //
-  //  // val dd = system.actorOf(Props[HelloActor], "hello")
+  //  val qq = Props(new HelloActor("aaaa"))
+  //  println(ss)
+  //  println(qq)
+  //
+  //  val dd = system.actorOf(ss, "hello")
+
+  //  val ee = system.actorOf(ss, "hello")
+
+  //  println(dd)
+
+  //  dd ! "efwfe"
+  //  println(ee)
+
   //
   //  system.actorOf(
   //    ClusterSingletonManager.props(
@@ -42,43 +58,47 @@ object Main extends App {
 
   // ClusterClientReceptionist(system).registerService(dd)
 
-  new scopt.OptionParser[RpcSettings]("cocoa") {
-    head("cocoa", "0.0.1")
-
-    opt[Int]('p', "port").action((x, c) => {
-      c.copy(port = x)
-    }).text("server port")
-
-    opt[Seq[String]]('s', "seeds").action((x, c) => {
-      c.copy(seeds = x)
-    }).text("server seeds")
-
-  }.parse(args, RpcSettings()) match {
-    case Some(settings) ⇒
-
-      val seeds = settings.seeds.map(s ⇒ s""""akka.tcp://MyClusterSystem@${s.trim}"""").mkString(",")
-
-      val config = ConfigFactory
-        .parseString(
-          s"""
-              akka.remote.netty.tcp.port=${settings.port}
-              akka.remote.netty.tcp.hostname="127.0.0.1"
-              akka.cluster.seed-nodes=[$seeds]
-              """)
-        .withFallback(ConfigFactory.load())
-
-      val injector = GuiceAkka(config, cluster = Some(true), ServicesModule)
-      //      implicit val system = injector.
-      import com.maogogo.cocoa.common.inject._
-      implicit val system = injector.actorSystem
-
-      // val dd = injectActor[HelloActor] required
-
-      // dd ! "hahha"
-
-      println(logo)
-    case None ⇒
-  }
+  //  new scopt.OptionParser[RpcSettings]("cocoa") {
+  //    head("cocoa", "0.0.1")
+  //
+  //    opt[Int]('p', "port").action((x, c) => {
+  //      c.copy(port = x)
+  //    }).text("server port")
+  //
+  //    opt[Seq[String]]('s', "seeds").action((x, c) => {
+  //      c.copy(seeds = x)
+  //    }).text("server seeds")
+  //
+  //  }.parse(args, RpcSettings()) match {
+  //    case Some(settings) ⇒
+  //
+  //      val seeds = settings.seeds.map(s ⇒ s""""akka.tcp://MyClusterSystem@${s.trim}"""").mkString(",")
+  //
+  //      val config = ConfigFactory
+  //        .parseString(
+  //          s"""
+  //              akka.remote.netty.tcp.port=${settings.port}
+  //              akka.remote.netty.tcp.hostname="127.0.0.1"
+  //              akka.cluster.seed-nodes=[$seeds]
+  //              """)
+  //        .withFallback(ConfigFactory.load())
+  //
+  //      val injector = GuiceAkka(config, cluster = Some(true), ServicesModule)
+  //      //      implicit val system = injector.
+  //      // import com.maogogo.cocoa.common.inject._
+  //      // implicit val system = injector.actorSystem
+  //
+  //      import net.codingwell.scalaguice.InjectorExtensions._
+  ////       injector.
+  //
+  ////       val dd = injectActor[HelloActor] required
+  //
+  ////      ClusterClientReceptionist(system).registerService(dd)
+  //      // dd ! "hahha"
+  //
+  //      println(logo)
+  //    case None ⇒
+  //  }
 
   lazy val logo =
     """

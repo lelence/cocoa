@@ -7,16 +7,16 @@ import com.maogogo.cocoa.common.inject.InjectExt
 
 final object ClusterRegister {
 
-  def registerSingleton[T <: Actor : Manifest](anno: String)(implicit system: ActorSystem) = {
-    val actor = injector[T] required
-
-    system.actorOf(
-      ClusterSingletonManager.props(
-        singletonProps = Props(actor),
-        terminationMessage = PoisonPill,
-        settings = ClusterSingletonManagerSettings(system).withRole("worker")),
-      name = "consumer")
-
-  }
+  //  def registerSingleton[T <: Actor: Manifest](anno: String)(implicit system: ActorSystem) = {
+  //    val actor = injector[T] required
+  //
+  //    system.actorOf(
+  //      ClusterSingletonManager.props(
+  //        singletonProps = Props(actor),
+  //        terminationMessage = PoisonPill,
+  //        settings = ClusterSingletonManagerSettings(system).withRole("worker")),
+  //      name = "consumer")
+  //
+  //  }
 
 }

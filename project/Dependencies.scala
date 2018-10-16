@@ -30,9 +30,10 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
   )
 
-  lazy val httpDependency = Seq(
+  lazy val httpAndSocketDependency = Seq(
   	"com.typesafe.akka" %% "akka-http" % "10.1.5",
-    "de.heikoseeberger" %% "akka-http-json4s" % "1.22.0"
+    "de.heikoseeberger" %% "akka-http-json4s" % "1.22.0",
+    "com.corundumstudio.socketio" % "netty-socketio" % "1.7.16"
   )
 
   lazy val driverDependency = Seq(

@@ -1,6 +1,6 @@
 package com.maogogo.cocoa.common
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
+import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
 import akka.cluster.Cluster
 import akka.stream.Materializer
 import com.google.inject.internal.BindingBuilder
@@ -10,37 +10,33 @@ import net.codingwell.scalaguice.ScalaModule
 
 package object inject {
 
-  import Internals._
+  //  import Internals._
 
-  type InjectorModule = AbstractModule with ScalaModule
+  import net.codingwell.scalaguice.InjectorExtensions._
 
   type InjectorProvider = () => Injector
 
-  def injectActor[T <: Actor : Manifest](implicit system: ActorSystem): ActorInjectionBuilder[T] = {
-    new ActorInjectionBuilderImpl[T]
+  implicit def system2Provider(sys: ActorSystem): InjectorProvider = () ⇒ InjectExt(sys).actorInjector
+
+  def injector[T: Manifest](implicit ip: InjectorProvider): T = ip().instance[T]
+
+  def injectorRef(named: String)(implicit sys: ActorSystem): ActorRef = {
+    val ip = system2Provider(sys)
+    val prop = ip().instance[Props](Names.named(named))
+    InjectExt(sys).createActorRef(prop, named)
   }
 
-  implicit def actorSystem2injectorProvider(implicit sys: ActorSystem): InjectorProvider = () => InjectExt(sys).actorInjector
+  def registerSingleton(named: String)(implicit sys: ActorSystem): Unit = {
+    val ip = system2Provider(sys)
+    val prop = ip().instance[Props](Names.named(named))
 
-  def injector[T](implicit ip: InjectorProvider): InjectionBuilder[T] = {
-    new InjectionBuilderImpl[T]
+    //    sys.actorOf(
+    //      ClusterSingletonManager.props(
+    //        singletonProps = Props(classOf[Consumer], queue, testActor),
+    //        terminationMessage = End,
+    //        settings = ClusterSingletonManagerSettings(system).withRole("worker")),
+    //      name = "consumer")
+
   }
-
-  implicit class ActorInjector(injector: Injector) {
-
-    def actorSystem: ActorSystem = injector.getInstance(classOf[ActorSystem])
-
-  }
-
-  //  implicit class aa[T: Manifest](builder: BindingBuilder[T]) {
-  //
-  //    def deployCluster(implicit system: ActorSystem)= {
-  //
-  //      // InjectExt(system).actorInjector
-  //      builder
-  //    }
-  //
-  //
-  //  }
 
 }

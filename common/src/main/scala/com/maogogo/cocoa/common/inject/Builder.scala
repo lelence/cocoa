@@ -10,72 +10,62 @@ import scala.util.Random
 
 trait Builder[I, O] {
 
-  protected type BuilderT
+  protected type BuilderType
 
-  def named(anno: String): BuilderT
+  def named(anno: String): BuilderType
 
   def required: O
 
   def optional: Option[O]
 
-  protected def thisBuilder(): BuilderT
-
 }
 
 trait InjectionBuilder[T] extends Builder[T, T] {
-  override protected type BuilderT = InjectionBuilder[T]
+  protected type BuilderType = InjectionBuilder[T]
 }
 
 trait ActorInjectionBuilder[T <: Actor] extends Builder[T, ActorRef] {
-  override protected def thisBuilder(): BuilderT = this.asInstanceOf[BuilderT]
+  protected type BuilderType = ActorInjectionBuilder[T]
 }
 
 private[inject] object Internals {
 
-  abstract class AbstractInjectionBuilder[I, O] extends Builder[I, O] {
-    protected val namedOpt: ThreadLocal[Option[String]] = ThreadLocal.withInitial(() ⇒ None)
+  //  abstract class AbstractBuilder[I, O] extends Builder[I, O] {
+  //    protected val annotationNamed: ThreadLocal[Option[String]] = ThreadLocal.withInitial(() ⇒ None)
+  //
+  //    override def named(anno: String): BuilderType = {
+  //      annotationNamed.set(Some(anno))
+  //      this.asInstanceOf[BuilderType]
+  //    }
+  //  }
 
-    override protected def thisBuilder(): BuilderT = this.asInstanceOf[BuilderT]
-
-    override def named(anno: String): BuilderT = {
-      namedOpt.set(Some(anno))
-      thisBuilder()
-    }
-  }
-
-  class InjectionBuilderImpl[T: Manifest](implicit ip: InjectorProvider)
-    extends AbstractInjectionBuilder[T, T] with InjectionBuilder[T] {
-
-    implicit val injector = ip()
-
-    override def required: T = checkopt(optional)
-
-    override def optional: Option[T] = provider[T](namedOpt.get).map(_.get())
-
-  }
-
-  class ActorInjectionBuilderImpl[T <: Actor : Manifest](implicit system: ActorSystem)
-    extends AbstractInjectionBuilder[T, ActorRef] with ActorInjectionBuilder[T] {
-
-    implicit lazy val injector = InjectExt(system).actorInjector
-
-    override def required: ActorRef = checkopt(optional)
-
-    override def optional: Option[ActorRef] = (provider[T] _ andThen toActorRef) (namedOpt.get)
-
-    protected def toActorRef(implicit system: ActorSystem): PartialFunction[Option[Provider[T]], Option[ActorRef]] = {
-      case opt: Option[Provider[T]] ⇒ opt.map { p ⇒
-        val named = namedOpt.get.getOrElse(s"actor_${Random.nextInt(Int.MaxValue)}")
-        system.actorOf(Props(p.get()), name = named)
-      }
-    }
-
-  }
-
-  class ClusterInjectionBuilderImpl[T <: Actor : Manifest](implicit system: ActorSystem)
-    extends ActorInjectionBuilderImpl[T] {
-
-  }
+  //  class InjectionBuilderImpl[T: Manifest](implicit ip: InjectorProvider)
+  //    extends AbstractBuilder[T, T] with InjectionBuilder[T] {
+  //
+  //    implicit val injector = ip()
+  //
+  //    override def required: T = checkopt(optional)
+  //
+  //    override def optional: Option[T] = provider[T](annotationNamed.get()).map(_.get())
+  //
+  //  }
+  //
+  //  class ActorInjectionBuilderImpl[T <: Actor: Manifest](implicit system: ActorSystem)
+  //    extends AbstractBuilder[T, ActorRef] with ActorInjectionBuilder[T] {
+  //
+  //    implicit lazy val injector = InjectExt(system).actorInjector
+  //
+  //    override def required: ActorRef = checkopt(optional)
+  //
+  //    override def optional: Option[ActorRef] = ??? //(provider[T] _ andThen toActorRef) (name)
+  //
+  //    //    protected def toActorRef(implicit system: ActorSystem): PartialFunction[Option[Provider[T]], Option[ActorRef]] = {
+  //    //      case opt: Option[Provider[T]] ⇒ opt.map { p ⇒
+  //    //        val named = namedOpt.get.getOrElse(s"actor_${Random.nextInt(Int.MaxValue)}")
+  //    //        system.actorOf(Props(p.get()), name = named)
+  //    //      }
+  //    //    }
+  //  }
 
   private def provider[T: Manifest](annotated: Option[String] = None)(
     implicit
@@ -96,16 +86,11 @@ private[inject] object Internals {
     }
   }
 
-  //  private def toT[T: Manifest]: PartialFunction[Try[T], T] = {
-  //    case Success(t) ⇒ t
-  //    case Failure(ex) ⇒ throw ex
+  //  case class InjectionNotAvailable[T: Manifest](s: String) extends IllegalStateException {
+  //    override def getMessage: String = {
+  //      s"Injection of [${manifest[T].runtimeClass.getName}] is not available $s"
+  //    }
   //  }
-
-  case class InjectionNotAvailable[T: Manifest](s: String) extends IllegalStateException {
-    override def getMessage: String = {
-      s"Injection of [${manifest[T].runtimeClass.getName}] is not available $s"
-    }
-  }
 
 }
 

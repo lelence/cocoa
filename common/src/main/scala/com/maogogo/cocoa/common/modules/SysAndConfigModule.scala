@@ -29,7 +29,7 @@ object SysAndConfigModule {
 }
 
 private object ActorSystemModule {
-  def apply(configOpt: Option[Config] = None, clusterOpt: Option[Boolean] = None): InjectorModule =
+  def apply(configOpt: Option[Config] = None, clusterOpt: Option[Boolean] = None): AbstractModule with ScalaModule =
     new AbstractModule with ScalaModule {
       override def configure(): Unit = {
         val cfg = configOpt.getOrElse(ConfigFactory.load())
@@ -49,11 +49,11 @@ private object ActorSystemModule {
 
 private object ActorMaterializerModule {
 
-  class ActorMaterializerProvider @Inject()(system: ActorSystem) extends Provider[ActorMaterializer] {
+  class ActorMaterializerProvider @Inject() (system: ActorSystem) extends Provider[ActorMaterializer] {
     override def get(): ActorMaterializer = ActorMaterializer()(system)
   }
 
-  def apply(): InjectorModule =
+  def apply(): AbstractModule with ScalaModule =
     new AbstractModule with ScalaModule {
       override def configure(): Unit = {
         bind[ActorMaterializer].toProvider[ActorMaterializerProvider].asEagerSingleton()
@@ -63,7 +63,7 @@ private object ActorMaterializerModule {
 }
 
 private object ActorConfigModule {
-  def apply(config: Option[Config] = None): InjectorModule =
+  def apply(config: Option[Config] = None): AbstractModule with ScalaModule =
     new AbstractModule with ScalaModule {
       override def configure(): Unit = {
         val cfg = config.getOrElse(ConfigFactory.load())

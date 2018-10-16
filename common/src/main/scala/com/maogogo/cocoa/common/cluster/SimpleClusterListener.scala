@@ -6,7 +6,7 @@ import akka.cluster.ClusterEvent._
 import com.typesafe.scalalogging.LazyLogging
 import javax.inject.Inject
 
-class SimpleClusterListener @Inject()(cluster: Cluster) extends Actor with LazyLogging {
+class SimpleClusterListener @Inject() (cluster: Cluster) extends Actor with LazyLogging {
 
   override def preStart(): Unit = {
     cluster.subscribe(self, initialStateMode = InitialStateAsEvents,

@@ -58,13 +58,13 @@ object Main extends App {
   //  val dd = system.actorOf(FromConfig.props(), "factorialFrontend")
   //
   //  println("dd =>>" + dd)
-  val ee: Future[Any] = dd ? "Toan"
+  //  val ee: Future[Any] = dd ? "Toan"
   //  println("afwfef ==>>>" + ee)
   //
-  ee.onComplete {
-    case scala.util.Success(value) ⇒ println("vvvv ==>>>" + value)
-    case scala.util.Failure(ex) ⇒ ex.printStackTrace()
-  }
+  //  ee.onComplete {
+  //    case scala.util.Success(value) ⇒ println("vvvv ==>>>" + value)
+  //    case scala.util.Failure(ex) ⇒ ex.printStackTrace()
+  //  }
 
   //  val dd = system.actorOf(
   //    ClusterRouterGroup(ConsistentHashingGroup(Nil), ClusterRouterGroupSettings(
@@ -76,29 +76,29 @@ object Main extends App {
 
   //  cluster.system.actorOf()
 
-  //  new scopt.OptionParser[RestSettings]("cocoa") {
-  //    head("cocoa", "0.0.1")
-  //
-  //    opt[Int]('p', "port").action((x, c) => {
-  //      c.copy(port = x)
-  //    }).text("server port")
-  //
-  //    opt[String]('c', "config").action((x, c) => {
-  //      c.copy(file = x)
-  //    }).text("config file")
-  //
-  //  }.parse(args, RestSettings()) match {
-  //    case Some(settings) ⇒
-  //
-  //      val injector = GuiceAkka(ServicesModule)
-  //
-  //      injector.getInstance(classOf[HttpServer])
-  //
-  ////      /user/factorialBackend
-  //
-  //      println(logo)
-  //    case None ⇒
-  //  }
+  new scopt.OptionParser[RestSettings]("cocoa") {
+    head("cocoa", "0.0.1")
+
+    opt[Int]('p', "port").action((x, c) => {
+      c.copy(port = x)
+    }).text("server port")
+
+    opt[String]('c', "config").action((x, c) => {
+      c.copy(file = x)
+    }).text("config file")
+
+  }.parse(args, RestSettings()) match {
+    case Some(settings) ⇒
+
+      val injector = GuiceAkka.withSystem(ServicesModule)
+      import net.codingwell.scalaguice.InjectorExtensions._
+
+      injector.instance[HttpServer]
+
+
+      println(logo)
+    case None ⇒
+  }
 
   lazy val logo =
     """

@@ -7,7 +7,8 @@ import net.codingwell.scalaguice.ScalaModule
 trait ServicesModule extends AbstractModule with ScalaModule {
 
   override def configure(): Unit = {
-    bind[HelloActor]
+
+    // bind[HelloActor].annotatedWithName("aa").asEagerSingleton()
   }
 
 }
