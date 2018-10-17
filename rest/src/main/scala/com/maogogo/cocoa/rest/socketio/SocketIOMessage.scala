@@ -16,6 +16,10 @@
 
 package com.maogogo.cocoa.rest.socketio
 
+import com.corundumstudio.socketio.{ AckRequest, SocketIOClient }
+
+case class SocketIOEvent[T](client: SocketIOClient, t: T, ackSender: AckRequest)
+
 case class SocketInMessage[T](event: String, t: T, headers: Map[String, String])
 
 trait SocketOutMessage

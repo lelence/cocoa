@@ -18,9 +18,12 @@ package com.maogogo.cocoa.rest.socketio
 
 import akka.actor.ActorRef
 import com.maogogo.cocoa.common._
-import com.corundumstudio.socketio.Configuration
+import com.corundumstudio.socketio.{ AckRequest, Configuration, SocketIOClient }
+import com.typesafe.scalalogging.LazyLogging
 
-class SocketIOServer(port: Int = 9092) {
+import scala.reflect.ClassTag
+
+class SocketIOServer(port: Int = 9092) extends LazyLogging {
 
   private lazy val config: Configuration = {
     val _config = new Configuration
@@ -46,16 +49,29 @@ class SocketIOServer(port: Int = 9092) {
 
     implicit def _protoBuf2JavaMap = protoBuf2JavaMap[O] _
 
-    // server.addConnectListener()
-
-    server.addEventListener(event, classOf[Any], new DataListener[I, O](event, actorRef))
+    server.addEventListener(event, classOf[Any], new ActorDataListener[I, O](event, actorRef))
   }
 
   def registerEvent[I, O](event: String, actorRef: ActorRef)(
     implicit
     serializr: String ⇒ I,
     deserializr: O ⇒ java.util.Map[String, Any]): Unit = {
-    server.addEventListener(event, classOf[Any], new DataListener[I, O](event, actorRef))
+    server.addEventListener(event, classOf[Any], new ActorDataListener[I, O](event, actorRef))
+  }
+
+  @throws(classOf[ClassCastException])
+  def registerEvent[T: Manifest](event: String)(
+    fallback: SocketIOEvent[T] ⇒ Unit): Unit = {
+
+    server.addEventListener(event, classOf[Any], new com.corundumstudio.socketio.listener.DataListener[Any] {
+      override def onData(client: SocketIOClient, data: Any, ackSender: AckRequest): Unit = {
+        fallback(SocketIOEvent(client, data.asInstanceOf[T], ackSender))
+      }
+    })
+  }
+
+  def registerListener[T](listener: AnyRef): Unit = {
+    server.addListeners(listener)
   }
 
   def broadcastMessage[T](msg: BroadcastMessage[T])(
@@ -65,8 +81,14 @@ class SocketIOServer(port: Int = 9092) {
     server.getBroadcastOperations.sendEvent(msg.event, map)
   }
 
-  def start: Unit = server.start()
+  def start: Unit = {
+    server.start()
+    logger.info(s"SocketIO server has bean started @ 0.0.0.0:${port}")
+  }
 
-  def stop: Unit = server.stop()
+  def stop: Unit = {
+    server.stop()
+    logger.info(s"SocketIO server has bean stop")
+  }
 
 }

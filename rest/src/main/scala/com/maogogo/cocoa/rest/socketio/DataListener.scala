@@ -25,7 +25,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-private[socketio] class DataListener[I, O](event: String, replyTo: ActorRef)(
+class DataListener[T] extends com.corundumstudio.socketio.listener.DataListener[T] {
+
+  override def onData(client: SocketIOClient, data: T, ackSender: AckRequest): Unit = {
+
+  }
+}
+
+private[socketio] class ActorDataListener[I, O](event: String, replyTo: ActorRef)(
   implicit
   serializr: String ⇒ I,
   deserializr: O ⇒ java.util.Map[String, Any])

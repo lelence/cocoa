@@ -20,7 +20,7 @@ import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpResponse, Status
 import akka.http.scaladsl.server.{ ExceptionHandler, Route }
 import akka.http.scaladsl.server.Directives._
 import akka.pattern.AskTimeoutException
-import com.maogogo.cocoa.rest.Json4sSupport
+import com.maogogo.cocoa.rest.http.Json4sSupport
 import com.typesafe.scalalogging.LazyLogging
 
 class RootEndpoint extends Json4sSupport with LazyLogging {

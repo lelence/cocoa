@@ -27,6 +27,9 @@ import com.maogogo.cocoa.protobuf.data._
 import com.typesafe.config.ConfigFactory
 import akka.pattern.ask
 import akka.util.Timeout
+import com.corundumstudio.socketio.{ AckRequest, SocketIOClient }
+import com.maogogo.cocoa.rest.http.HttpServer
+import com.maogogo.cocoa.rest.socketio.{ DataListener, SocketIOEvent, SocketIOServer }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -110,6 +113,15 @@ object Main extends App {
       import net.codingwell.scalaguice.InjectorExtensions._
 
       injector.instance[HttpServer]
+
+      val server = new SocketIOServer()
+
+      server.registerEvent[String]("haha") { e ⇒
+        println("eee==>>>" + e.t)
+        e.ackSender.sendAckData(s"hello: ${e.t}")
+      }
+
+      server.start
 
       println(logo)
     case None ⇒

@@ -18,3 +18,7 @@ message RpcSettings {
     repeated string seeds = 4;
     repeated string roles = 5;
 }
+
+message RedisSetting {
+
+}

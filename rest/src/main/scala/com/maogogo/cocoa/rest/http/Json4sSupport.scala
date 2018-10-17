@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest
+package com.maogogo.cocoa.rest.http
 
 import org.json4s.JsonAST.{ JNull, JString }
 import org.json4s.{ CustomSerializer, DefaultFormats }

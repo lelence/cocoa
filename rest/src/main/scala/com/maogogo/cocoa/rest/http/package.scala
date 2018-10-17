@@ -16,17 +16,26 @@
 
 package com.maogogo.cocoa.rest
 
-import com.maogogo.cocoa.rest.endpoints.RootEndpoint
-import com.maogogo.cocoa.rest.http.HttpServer
-import net.codingwell.scalaguice.ScalaModule
+import akka.http.scaladsl.model.{ HttpMethods, HttpRequest, Uri }
 
-trait ServicesModule extends ScalaModule {
+package object http {
 
-  override def configure(): Unit = {
-    bind[RootEndpoint]
-    bind[HttpServer]
+  object Get {
+    def apply(uri: String): HttpRequest =
+      HttpRequest(method = HttpMethods.GET, uri = Uri(uri))
+
+    def apply(uri: Uri): HttpRequest =
+      HttpRequest(method = HttpMethods.GET, uri = uri)
+  }
+
+  object Post {
+
+    def apply(uri: String): HttpRequest =
+      HttpRequest(method = HttpMethods.POST, uri = Uri(uri))
+
+    def apply(uri: Uri): HttpRequest =
+      HttpRequest(method = HttpMethods.POST, uri = uri)
+
   }
 
 }
-
-object ServicesModule extends ServicesModule

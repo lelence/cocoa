@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <link rel="stylesheet" href="">
+    <script type="text/javascript" src="build.min.js" charset="utf-8"></script>
+</head>
+<body>
+<input type="text" id="aa"> <input type="button" id="bb" value="提交">
+<div id="cc"></div>
+</body>
+<script type="text/javascript">
+    var socket = io('http://localhost:8585', {
+        query: {token: 'Tokens'}
+    });
+
+    $("#bb").click(function () {
+        var json = {username: "Toan", password: "hahahah"}
+
+        socket.emit('haha', "Toan", function (data) {
+            console.log("aaaaaaaaaa")
+            console.log(data)
+        });
+    })
+
+
+</script>
+</html>

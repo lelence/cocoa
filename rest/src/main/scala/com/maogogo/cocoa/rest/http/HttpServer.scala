@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest
+package com.maogogo.cocoa.rest.http
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http

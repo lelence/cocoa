@@ -11,3 +11,5 @@ logs/
 .idea/
 *.iml
 .cache-tests
+node_modules/
+dist/
