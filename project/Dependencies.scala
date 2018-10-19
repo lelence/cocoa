@@ -33,6 +33,7 @@ object Dependencies {
   lazy val httpAndSocketDependency = Seq(
   	"com.typesafe.akka" %% "akka-http" % "10.1.5",
     "de.heikoseeberger" %% "akka-http-json4s" % "1.22.0",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.7",
     "com.corundumstudio.socketio" % "netty-socketio" % "1.7.16"
   )
 

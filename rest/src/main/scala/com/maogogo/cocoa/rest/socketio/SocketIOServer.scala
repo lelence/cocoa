@@ -16,79 +16,137 @@
 
 package com.maogogo.cocoa.rest.socketio
 
+import java.util
+
 import akka.actor.ActorRef
-import com.maogogo.cocoa.common._
-import com.corundumstudio.socketio.{ AckRequest, Configuration, SocketIOClient }
+import com.corundumstudio.socketio.listener.DataListener
+import com.corundumstudio.socketio.{ AckRequest, SocketIOClient }
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.google.inject.Injector
+import com.maogogo.cocoa.rest.socketio.EventReflection._
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.reflect.ClassTag
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, Future }
 
-class SocketIOServer(port: Int = 9092) extends LazyLogging {
+private[socketio] object SocketIOServerLocal {
 
-  private lazy val config: Configuration = {
-    val _config = new Configuration
-    _config.setHostname("localhost")
-    _config.setPort(port)
-    _config.setMaxFramePayloadLength(1024 * 1024)
-    _config.setMaxHttpContentLength(1024 * 1024)
-    _config.getSocketConfig.setReuseAddress(true)
-    _config
+  //
+  private val eventProvider: collection.mutable.Seq[ProviderEventClass[_]] = collection.mutable.Seq.empty
+
+  private val eventSubscriber: collection.mutable.Set[SubscriberEvent] = collection.mutable.Set.empty
+
+  lazy val mapper = {
+    val mapper = new ObjectMapper()
+    mapper.registerModule(DefaultScalaModule)
+    mapper
   }
 
-  private lazy val server = {
-    val _server = new com.corundumstudio.socketio.SocketIOServer(config)
-    _server.addConnectListener(new ConnectionListener)
-    _server.addDisconnectListener(new DisconnectionListener)
-    _server
-  }
+  def addSubscriber(s: SubscriberEvent): Unit = eventSubscriber + s
 
-  def registerMessage[I <: ProtoBuf[I], O <: ProtoBuf[O]](event: String, actorRef: ActorRef)(
-    implicit
-    c: scalapb.GeneratedMessageCompanion[I]): Unit = {
-    implicit def _string2ProtoBuf = string2ProtoBuf[I] _
+  def getSubscriber(event: String): Seq[SubscriberEvent] =
+    eventSubscriber.filter(_.event == event).toSeq
 
-    implicit def _protoBuf2JavaMap = protoBuf2JavaMap[O] _
+  def getSubscribers: Seq[SubscriberEvent] = eventSubscriber.toSeq
 
-    server.addEventListener(event, classOf[Any], new ActorDataListener[I, O](event, actorRef))
-  }
+  def addProvider[T](t: ProviderEventClass[T]): Unit = eventProvider :+ t
 
-  def registerEvent[I, O](event: String, actorRef: ActorRef)(
-    implicit
-    serializr: String ⇒ I,
-    deserializr: O ⇒ java.util.Map[String, Any]): Unit = {
-    server.addEventListener(event, classOf[Any], new ActorDataListener[I, O](event, actorRef))
-  }
+  def getProviders: Seq[ProviderEventClass[_]] = eventProvider
 
-  @throws(classOf[ClassCastException])
-  def registerEvent[T: Manifest](event: String)(
-    fallback: SocketIOEvent[T] ⇒ Unit): Unit = {
+  def getProvider(name: String): Seq[ProviderEventClass[_]] = {
 
-    server.addEventListener(event, classOf[Any], new com.corundumstudio.socketio.listener.DataListener[Any] {
-      override def onData(client: SocketIOClient, data: Any, ackSender: AckRequest): Unit = {
-        fallback(SocketIOEvent(client, data.asInstanceOf[T], ackSender))
+    eventProvider.map { e ⇒
+      // TODO(Toan) 这里会不会有同一个类多个方法注册了相同的事件
+      // 相同事件 应该只有一个
+      val ms = e.methods.find {
+        _.event.event == name
+      } match {
+        case Some(m) ⇒ Seq(m)
+        case _ ⇒ Seq.empty
       }
-    })
+      e.copy(methods = ms)
+    }.filter(_.methods.nonEmpty) // .headOption
   }
+}
 
-  def registerListener[T](listener: AnyRef): Unit = {
-    server.addListeners(listener)
-  }
+class SocketIOServer(
+  injector: Injector,
+  server: com.corundumstudio.socketio.SocketIOServer,
+  router: ActorRef) extends LazyLogging {
 
-  def broadcastMessage[T](msg: BroadcastMessage[T])(
-    implicit
-    deserializr: T ⇒ java.util.Map[String, Any]): Unit = {
-    val map = deserializr(msg.t)
-    server.getBroadcastOperations.sendEvent(msg.event, map)
+  import SocketIOServerLocal._
+
+  // 这里分两种情况 1. 直接注册listener, 2. 需要注入到actor
+  def register[T: Manifest](implicit m: Manifest[T]): Unit = {
+
+    val instance = injector.getInstance(m.runtimeClass)
+
+    val methods = EventReflection.lookupEventMethods
+
+    val t = ProviderEventClass(instance = instance, clazz = m.runtimeClass, methods = methods)
+
+    addProvider(t)
   }
 
   def start: Unit = {
+
+    // 注册请求事件
+    server.addEventListener("", classOf[java.util.Map[String, Any]], new DataListener[java.util.Map[String, Any]] {
+      override def onData(client: SocketIOClient, data: util.Map[String, Any], ackSender: AckRequest): Unit = {
+        val event = data.get("method").toString
+
+        val json = mapper.writeValueAsString(data.get("params"))
+
+        addSubscriber(SubscriberEvent(client, event, json))
+
+        getProvider(event).foreach { clazz ⇒
+
+          val methodEvent = clazz.methods.head
+
+          // TODO(Toan) 这里缺少了一种情况
+          // 客户端直接请求数据
+          // 客户端请求广播数据
+          // 客户端订阅广播数据
+          // 主动广播消息
+          methodEvent.event match {
+            case event(_, 0, _, _) ⇒
+              val methodEvent = clazz.methods.head
+              val instance = clazz.instance
+              val resp = EventReflection.invokeMethod(instance, methodEvent, json)
+              ackSender.sendAckData(resp)
+              // replyMessage(ackSender, clazz, json)
+            case event(_, 1, -1, _) ⇒ // broadMessage()
+            case event(_, 2, _, _) ⇒ logger.info("auto reply client message by actor")
+            case _ ⇒ throw new Exception("not supported")
+          }
+        }
+      }
+    })
+
     server.start()
-    logger.info(s"SocketIO server has bean started @ 0.0.0.0:${port}")
   }
 
-  def stop: Unit = {
-    server.stop()
-    logger.info(s"SocketIO server has bean stop")
+  def replyMessage(ackSender: AckRequest, clazz: ProviderEventClass[_], json: String): Unit = {
+
+    val methodEvent = clazz.methods.head
+
+    val instance = clazz.instance
+
+    val resp = EventReflection.invokeMethod(instance, methodEvent, json)
+
+    ackSender.sendAckData(resp)
+
+  }
+
+  def broadMessage(event: String, anyRef: AnyRef): Unit = {
+    server.getBroadcastOperations.sendEvent(event, anyRef)
+  }
+
+  def stop: Unit = server.stop()
+
+  def sendErrorMessage(ackSender: AckRequest): Unit = {
+    ackSender.sendAckData("error")
   }
 
 }

@@ -16,8 +16,10 @@
 
 package com.maogogo.cocoa.rest
 
+import com.google.inject.name.Names
 import com.maogogo.cocoa.rest.endpoints.RootEndpoint
 import com.maogogo.cocoa.rest.http.HttpServer
+import com.maogogo.cocoa.rest.socketio.{ AA, EventListener }
 import net.codingwell.scalaguice.ScalaModule
 
 trait ServicesModule extends ScalaModule {
@@ -25,7 +27,16 @@ trait ServicesModule extends ScalaModule {
   override def configure(): Unit = {
     bind[RootEndpoint]
     bind[HttpServer]
+
+    bind[EventListener].annotatedWith(Names.named("haha")).to[AA]
+
+    // bind[AA].annotatedWithName("haha")
+    //    bind[AA].annotatedWithName()
   }
+
+  //  def provideAA: AA = {
+  //    new AA()
+  //  }
 
 }
 

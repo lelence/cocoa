@@ -16,22 +16,15 @@
 
 package com.maogogo.cocoa.rest
 
-import akka.actor.{ Actor, ActorSystem, Props, Timers }
-import akka.cluster.Cluster
-import akka.cluster.client.{ ClusterClient, ClusterClientSettings }
-import akka.cluster.routing.{ ClusterRouterGroup, ClusterRouterGroupSettings }
+import akka.actor.ActorSystem
 import akka.cluster.singleton.{ ClusterSingletonProxy, ClusterSingletonProxySettings }
-import akka.routing.{ ConsistentHashingGroup, FromConfig, RoundRobinGroup }
+import akka.util.Timeout
 import com.maogogo.cocoa.common.GuiceAkka
 import com.maogogo.cocoa.protobuf.data._
-import com.typesafe.config.ConfigFactory
-import akka.pattern.ask
-import akka.util.Timeout
-import com.corundumstudio.socketio.{ AckRequest, SocketIOClient }
 import com.maogogo.cocoa.rest.http.HttpServer
-import com.maogogo.cocoa.rest.socketio.{ DataListener, SocketIOEvent, SocketIOServer }
+import com.maogogo.cocoa.rest.socketio.{ AA, SocketIOSystemExtension }
+import com.typesafe.config.ConfigFactory
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object Main extends App {
@@ -44,8 +37,6 @@ object Main extends App {
   // akka.cluster.client.initial-contacts=["akka.tcp://aa@127.0.0.1:20550/system/receptionist"]
   //akka.cluster.seed-nodes=["akka.tcp://aa@127.0.0.1:20550"]
   implicit val system = ActorSystem("aa", config)
-
-  import system.dispatcher
   // val cluster = Cluster(system)
 
   //  client {
@@ -114,14 +105,22 @@ object Main extends App {
 
       injector.instance[HttpServer]
 
-      val server = new SocketIOServer()
+      val system = injector.instance[ActorSystem]
 
-      server.registerEvent[String]("haha") { e ⇒
-        println("eee==>>>" + e.t)
-        e.ackSender.sendAckData(s"hello: ${e.t}")
-      }
+      val dd = SocketIOSystemExtension(system).init(injector)
 
-      server.start
+      dd.register[AA]
+
+      dd.start
+
+      //      val server = new SocketIOServer()
+      //
+      //      server.registerEvent[String]("") { e ⇒
+      //        println("eee==>>>" + e.t)
+      //        e.ackSender.sendAckData(s"hello: ${e.t}")
+      //      }
+      //
+      //      server.start
 
       println(logo)
     case None ⇒

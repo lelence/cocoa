@@ -17,12 +17,16 @@
     });
 
     $("#bb").click(function () {
-        var json = {username: "Toan", password: "hahahah"}
+        var json = {method: 'test2', params: {username: "Toan", password: "hahahah"}}
 
-        socket.emit('haha', "Toan", function (data) {
+        socket.emit('', json, function (data) {
             console.log("aaaaaaaaaa")
             console.log(data)
         });
+    })
+
+    socket.on("haha", function(data) {
+        console.log(data)
     })
 
 
