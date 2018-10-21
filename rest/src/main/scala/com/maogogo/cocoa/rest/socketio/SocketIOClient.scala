@@ -14,29 +14,20 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest
+package com.maogogo.cocoa.rest.socketio
 
-import com.maogogo.cocoa.rest.endpoints.RootEndpoint
-import com.maogogo.cocoa.rest.http.HttpServer
-import com.maogogo.cocoa.rest.socketio.{ EventTest, EventTestImpl }
-import net.codingwell.scalaguice.ScalaModule
+object SocketIOClient {
 
-trait ServicesModule extends ScalaModule {
+  private val subscribers = new java.util.HashSet[SubscriberEvent]
 
-  override def configure(): Unit = {
-    bind[RootEndpoint]
-    bind[HttpServer]
-
-    // bind[EventListener].annotatedWith(Names.named("haha")).to[AA]
-
-    bind[EventTest].to[EventTestImpl]
-    //    bind[AA].annotatedWithName()
+  def add(client: IOClient, event: String, json: String): Unit = {
+    subscribers.add(SubscriberEvent(client, event, json))
   }
 
-  //  def provideAA: AA = {
-  //    new AA()
-  //  }
+  def getClients(fallback: String ⇒ Boolean): Seq[SubscriberEvent] = {
+    import scala.collection.JavaConverters._
+    subscribers.asScala.toSeq.filter(x ⇒ fallback(x.event))
+  }
 
 }
 
-object ServicesModule extends ServicesModule

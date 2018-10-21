@@ -18,24 +18,30 @@ package com.maogogo.cocoa.rest.socketio
 
 import scala.concurrent.Future
 
-trait EventListener {
+trait EventTest {
 
 }
 
-class AA extends EventListener {
+class EventTestImpl extends EventTest {
 
-  @event(event = "test1", broadcast = 0, interval = -1, replyTo = "")
-  def aa(b: Userinfo): Future[Userinfo] = {
-    println(b)
-    Future.successful(b.copy(username = "Hellotest1"))
+  @event("haha1")
+  def aa1(u: UserInfo): Future[UserInfo] = {
+    // println("uuu1===>>" + u)
+    Future.successful(u.copy(username = "Helloaa1"))
   }
 
-  @event(event = "test2", broadcast = 2, interval = -1, replyTo = "haha")
-  def bb(b: Userinfo): Future[Userinfo] = {
-    println(b)
-    Future.successful(b.copy(username = "Hellotest2"))
+  @event("haha2", broadcast = 1, interval = 10, replyTo = "hahaa")
+  def aa2(u: UserInfo): Future[UserInfo] = {
+    // println("uuu2===>>" + u)
+    Future.successful(u.copy(username = "Helloaa2"))
+  }
+
+  @event(broadcast = 2, interval = 15, replyTo = "hahab")
+  def aa3(): Future[UserInfo] = {
+    // println("uuu3===>>" + u)
+    Future.successful(UserInfo("hahah", "kkekekeke"))
   }
 
 }
 
-case class Userinfo(username: String, password: String)
+case class UserInfo(username: String, password: String)

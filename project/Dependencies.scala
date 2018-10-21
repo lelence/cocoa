@@ -16,7 +16,8 @@ object Dependencies {
     "net.codingwell" %% "scala-guice" % "4.2.1",
     "com.github.scopt" %% "scopt" % "3.7.0",
     "com.thesamet.scalapb" %% "scalapb-json4s" % "0.7.1",
-    "org.json4s" %% "json4s-native" % "3.6.1"
+    "org.json4s" %% "json4s-native" % "3.6.1",
+    "org.reflections" % "reflections" % "0.9.11"
   )
 
   lazy val actorDependency = Seq(
@@ -40,6 +41,7 @@ object Dependencies {
   lazy val driverDependency = Seq(
   	"com.github.etaty" %% "rediscala" % "1.8.0",
     "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "0.20",
+    "com.typesafe.akka" %% "akka-stream-kafka" % "0.22",
     "mysql" % "mysql-connector-java" % "5.1.47"
   )
 

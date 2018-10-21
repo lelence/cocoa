@@ -16,27 +16,7 @@
 
 package com.maogogo.cocoa.rest
 
-import com.maogogo.cocoa.rest.endpoints.RootEndpoint
-import com.maogogo.cocoa.rest.http.HttpServer
-import com.maogogo.cocoa.rest.socketio.{ EventTest, EventTestImpl }
-import net.codingwell.scalaguice.ScalaModule
-
-trait ServicesModule extends ScalaModule {
-
-  override def configure(): Unit = {
-    bind[RootEndpoint]
-    bind[HttpServer]
-
-    // bind[EventListener].annotatedWith(Names.named("haha")).to[AA]
-
-    bind[EventTest].to[EventTestImpl]
-    //    bind[AA].annotatedWithName()
-  }
-
-  //  def provideAA: AA = {
-  //    new AA()
-  //  }
+class Test3 {
 
 }
 
-object ServicesModule extends ServicesModule

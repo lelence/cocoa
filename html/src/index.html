@@ -17,15 +17,25 @@
     });
 
     $("#bb").click(function () {
-        var json = {method: 'test2', params: {username: "Toan", password: "hahahah"}}
+        var json1 = {method: 'haha1', params: {username: "Toan", password: "hahahah"}}
+        var json2 = {method: 'haha2', params: {username: "Toan", password: "hahahah"}}
 
-        socket.emit('', json, function (data) {
+        // socket.emit('', json1, function (data) {
+        //     console.log("aaaaaaaaaa")
+        //     console.log(data)
+        // });
+
+        socket.emit('', json2, function (data) {
             console.log("aaaaaaaaaa")
             console.log(data)
         });
     })
 
-    socket.on("haha", function(data) {
+    socket.on("hahaa", function(data) {
+        console.log(data)
+    })
+
+    socket.on("hahab", function(data) {
         console.log(data)
     })
 

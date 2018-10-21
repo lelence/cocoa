@@ -17,37 +17,31 @@
 package com.maogogo.cocoa.rest.socketio
 
 import akka.actor.Actor
+import com.typesafe.scalalogging.LazyLogging
 
-import scala.concurrent.duration._
-
-class SocketIOServerActor extends Actor {
-
-  implicit val ex = context.system.dispatcher
+class SocketIOServerActor extends Actor with LazyLogging {
 
   override def receive: Receive = {
-    case StartBroadcast ⇒
-      import SocketIOServerLocal._
+    case BroadcastMessage(server, provider, method) ⇒
 
-      getProviders.map { p ⇒
-        // 去掉不需要广播的消息
-        val ms = p.methods.filterNot(_.event.broadcast == 0)
-        p.copy(methods = ms)
-      }.map { p ⇒
-        p.methods.map { m ⇒
-          // 定时调用并推送消息
-          // 定时广播给指定客户端
-          // TODO(Toan)这里还缺少一个广播给所有
-          context.system.scheduler.schedule(5 seconds, m.event.interval seconds, new Runnable {
-            override def run(): Unit = {
-              getSubscriber(m.event.event).map { suber ⇒
-                val resp = EventReflection.invokeMethod(p.instance, m, suber.json)
-                suber.client.sendEvent(m.event.event, resp)
-              }
-            }
-          })
-        }
+      logger.info(s"${context.self.path} broadcast message")
+
+      val event = method.event
+
+      event.broadcast match {
+        case 1 ⇒
+
+          SocketIOClient.getClients(_ == event.event).foreach { c ⇒
+            val resp = server.invokeMethod(provider.instance, method, Some(c.json))
+            c.client.sendEvent(event.replyTo, resp)
+          }
+
+        case 2 ⇒
+
+          // 主动广播给所有的client(这里不能有请求值)
+          val resp = server.invokeMethod(provider.instance, method, None)
+          server.broadMessage(event.replyTo, resp)
+        case _ ⇒ // ignore throw new SocketIOException("broadcast not supported")
       }
   }
-
 }
-

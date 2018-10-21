@@ -16,81 +16,101 @@
 
 package com.maogogo.cocoa.rest.socketio
 
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration.Duration
+import org.reflections.Reflections
+
+import scala.concurrent.Future
+import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 object EventReflection {
 
-  lazy val currentMirror = runtimeMirror(getClass.getClassLoader)
+  private lazy val defPackage = "com.maogogo.cocoa"
 
-  def lookupEventMethods[T]: Seq[ProviderEventMethod] = {
+  private lazy val m = runtimeMirror(getClass.getClassLoader)
 
-    typeOf[AA].decls.map(_.asMethod).map { mth ⇒
-      (mth, filterAnnotation(mth.annotations))
-    }.filter(_._2.nonEmpty).map {
-      case (mth, anno) ⇒
-
-        val event = toEventAnnotation(anno.head)
-
-        val paramType = mth.paramLists.flatMap {
-          _.map { x ⇒
-            x.typeSignature.typeSymbol.asClass
-          }
-        }.head
-
-        val paramSymbol = currentMirror.staticClass(paramType.fullName)
-
-        val paramClazz = currentMirror.runtimeClass(paramSymbol)
-
-        val futureType = if (mth.returnType.typeConstructor =:= typeOf[scala.concurrent.Future[_]].typeConstructor) {
-          mth.returnType.typeArgs.head
-        } else mth.returnType
-
-        ProviderEventMethod(event = event, method = mth, paramClazz = paramClazz, futureType = futureType)
-
-    } toSeq
+  def tpe2Symbol: PartialFunction[TypeTag[_], Symbol] = {
+    case t: TypeTag[_] ⇒ t.tpe.typeSymbol
   }
 
-  def getMethodMirror[T: Manifest](i: T, m: MethodSymbol): MethodMirror = {
-    currentMirror.reflect(i).reflectMethod(m)
+  def symbol2ClassSymbol: PartialFunction[Symbol, ClassSymbol] = {
+    case s: Symbol ⇒ s.asClass
   }
 
-  private def toEventAnnotation: PartialFunction[Annotation, event] = {
-    case anno: Annotation ⇒
-      // 这里是按照顺序获取的 顺序不对会报错
-      val annoVals = anno.tree.children.tail.collect {
-        case Literal(Constant(e)) ⇒ e
-      }
-
-      event(annoVals(0).toString, annoVals(1).asInstanceOf[Int],
-        annoVals(2).asInstanceOf[Long], annoVals(3).asInstanceOf[String])
-
+  def symbol2MethodSymbol: PartialFunction[Symbol, MethodSymbol] = {
+    case s: Symbol ⇒ s.asMethod
   }
 
-  private def filterAnnotation: PartialFunction[Seq[Annotation], Seq[Annotation]] = {
-    case annos: Seq[Annotation] ⇒
-      annos.filter(anno ⇒ anno.tree.tpe =:= typeOf[event])
+  def symbol2Class: PartialFunction[ClassSymbol, Class[_]] = {
+    case cs: ClassSymbol ⇒ m.runtimeClass(cs)
   }
 
-  def lookupEventMethod[T](event: String): Option[ProviderEventMethod] = {
-    lookupEventMethods.find(_.event.event == event)
+  def class2Symbol: PartialFunction[Class[_], ClassSymbol] = {
+    case cls: Class[_] ⇒ m.classSymbol(cls)
   }
 
-  def invokeMethod[T](instance: T, method: ProviderEventMethod, json: String): AnyRef = {
-    import com.maogogo.cocoa.rest.socketio.SocketIOServerLocal.mapper
+  def tpe2Class: PartialFunction[TypeTag[_], Class[_]] =
+    tpe2Symbol andThen symbol2ClassSymbol andThen symbol2Class
 
-    val params = SocketIOServerLocal.mapper.readValue(json, method.paramClazz)
-    val methodMirror = getMethodMirror(instance, method.method)
+  def symbol2Tpe: PartialFunction[Symbol, Type] = {
+    case s: Symbol ⇒ s.typeSignature
+  }
 
-    methodMirror(params) match {
-      case f: Future[_] ⇒
-        val resp = Await.result(f, Duration.Inf)
-        mapper.convertValue(resp, classOf[java.util.Map[String, Any]])
-      case s: String ⇒ s
+  def subClassSymbol(t: TypeTag[_], projectPackage: String = defPackage): Set[ClassSymbol] = {
+    subClass(t, projectPackage).map(class2Symbol)
+  }
+
+  def subClass(t: TypeTag[_], projectPackage: String = defPackage): Set[Class[_]] = {
+    val r = new Reflections(projectPackage)
+    import scala.collection.JavaConverters._
+    r.getSubTypesOf(tpe2Class(t)).asScala.toSet
+  }
+
+  def members(clazz: Class[_]): Seq[MethodSymbol] = members(class2Symbol(clazz))
+
+  def members(symbol: ClassSymbol): Seq[MethodSymbol] =
+    symbol2Tpe(symbol).decls.map(_.asMethod).toSeq
+
+  def membersWithNamed[A: TypeTag](cls: Class[_]): Seq[MethodSymbol] = {
+    println(members(cls))
+    members(cls).map {
+      case m: MethodSymbol ⇒
+        println("====>>>" + memberNamed[A](m))
+        (m, memberNamed[A](m))
+    }.filter(_._2.nonEmpty).map(_._1)
+  }
+
+  def memberNamed[A: TypeTag](symbol: Symbol): Option[Annotation] = {
+
+    symbol.annotations.foreach { x ⇒
+
+      println(x)
+
+      println(x.tree.tpe + "###" + typeOf[A])
+
+      println(x.tree.tpe =:= typeOf[A])
+
     }
 
+    symbol.annotations.find(_.tree.tpe =:= typeOf[A])
+  }
+
+  def annotation[A: TypeTag](symbol: MethodSymbol)(fallback: Tree ⇒ A): Option[A] = {
+    memberNamed(symbol).map(a ⇒ fallback(a.tree))
+  }
+
+  def returnType(symbol: MethodSymbol): Option[Type] = {
+    if (symbol.returnType.typeConstructor =:= typeOf[Future[_]].typeConstructor)
+      symbol.returnType.typeArgs.headOption
+    else
+      Some(symbol.returnType)
+  }
+
+  def parameterSingleClazz(symbol: MethodSymbol): Option[Class[_]] = {
+    symbol.paramLists.flatMap(_.map(_.typeSignature.typeSymbol.asClass)).headOption.map(symbol2Class)
+  }
+
+  def methodMirror[T: ClassTag](i: T, methodSymbol: MethodSymbol): MethodMirror = {
+    m.reflect(i).reflectMethod(methodSymbol)
   }
 
 }
-

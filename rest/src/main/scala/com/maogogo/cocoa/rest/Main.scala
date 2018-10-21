@@ -22,7 +22,8 @@ import akka.util.Timeout
 import com.maogogo.cocoa.common.GuiceAkka
 import com.maogogo.cocoa.protobuf.data._
 import com.maogogo.cocoa.rest.http.HttpServer
-import com.maogogo.cocoa.rest.socketio.{ AA, SocketIOSystemExtension }
+import com.maogogo.cocoa.rest.socketio.{ SocketIOSettings, SocketIOSystemExtension }
+import com.maogogo.cocoa.rest.socketio.EventTest
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
@@ -107,20 +108,11 @@ object Main extends App {
 
       val system = injector.instance[ActorSystem]
 
-      val dd = SocketIOSystemExtension(system).init(injector)
+      val settings = SocketIOSettings().register[EventTest]
 
-      dd.register[AA]
+      val dd = SocketIOSystemExtension(system).init(injector, settings)
 
       dd.start
-
-      //      val server = new SocketIOServer()
-      //
-      //      server.registerEvent[String]("") { e ⇒
-      //        println("eee==>>>" + e.t)
-      //        e.ackSender.sendAckData(s"hello: ${e.t}")
-      //      }
-      //
-      //      server.start
 
       println(logo)
     case None ⇒

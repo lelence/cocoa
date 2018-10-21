@@ -16,115 +16,68 @@
 
 package com.maogogo.cocoa.rest.socketio
 
-import java.util
-
 import akka.actor.ActorRef
+import com.corundumstudio.socketio.AckRequest
 import com.corundumstudio.socketio.listener.DataListener
-import com.corundumstudio.socketio.{ AckRequest, SocketIOClient }
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.inject.Injector
-import com.maogogo.cocoa.rest.socketio.EventReflection._
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
+import scala.reflect.ClassTag
 
-private[socketio] object SocketIOServerLocal {
+private[socketio] object SocketIOServer {
 
-  //
-  private val eventProvider: collection.mutable.Seq[ProviderEventClass[_]] = collection.mutable.Seq.empty
+  def apply(
+    injector: Injector,
+    settings: SocketIOSettings,
+    providers: Seq[ProviderEventClass[_]],
+    server: com.corundumstudio.socketio.SocketIOServer,
+    router: ActorRef): SocketIOServer = {
+    new SocketIOServer(injector, settings, providers, server, router)
+  }
 
-  private val eventSubscriber: collection.mutable.Set[SubscriberEvent] = collection.mutable.Set.empty
+}
 
-  lazy val mapper = {
+private[socketio] class SocketIOServer(
+  injector: Injector,
+  settings: SocketIOSettings,
+  providers: Seq[ProviderEventClass[_]],
+  server: IOServer,
+  router: ActorRef) {
+
+  private lazy val mapper = {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
     mapper
   }
 
-  def addSubscriber(s: SubscriberEvent): Unit = eventSubscriber + s
-
-  def getSubscriber(event: String): Seq[SubscriberEvent] =
-    eventSubscriber.filter(_.event == event).toSeq
-
-  def getSubscribers: Seq[SubscriberEvent] = eventSubscriber.toSeq
-
-  def addProvider[T](t: ProviderEventClass[T]): Unit = eventProvider :+ t
-
-  def getProviders: Seq[ProviderEventClass[_]] = eventProvider
-
-  def getProvider(name: String): Seq[ProviderEventClass[_]] = {
-
-    eventProvider.map { e ⇒
-      // TODO(Toan) 这里会不会有同一个类多个方法注册了相同的事件
-      // 相同事件 应该只有一个
-      val ms = e.methods.find {
-        _.event.event == name
-      } match {
-        case Some(m) ⇒ Seq(m)
-        case _ ⇒ Seq.empty
-      }
-      e.copy(methods = ms)
-    }.filter(_.methods.nonEmpty) // .headOption
-  }
-}
-
-class SocketIOServer(
-  injector: Injector,
-  server: com.corundumstudio.socketio.SocketIOServer,
-  router: ActorRef) extends LazyLogging {
-
-  import SocketIOServerLocal._
-
-  // 这里分两种情况 1. 直接注册listener, 2. 需要注入到actor
-  def register[T: Manifest](implicit m: Manifest[T]): Unit = {
-
-    val instance = injector.getInstance(m.runtimeClass)
-
-    val methods = EventReflection.lookupEventMethods
-
-    val t = ProviderEventClass(instance = instance, clazz = m.runtimeClass, methods = methods)
-
-    addProvider(t)
+  def getProviders(fallback: Int ⇒ Boolean): Seq[ProviderEventClass[_]] = {
+    providers.map { p ⇒
+      val ms = p.methods.filter(e ⇒ fallback(e.event.broadcast))
+      p.copy(methods = ms)
+    }.filter(_.methods.nonEmpty)
   }
 
   def start: Unit = {
 
-    // 注册请求事件
+    router ! StartBroadcast(this, getProviders(_ != 0), settings.pool)
+
     server.addEventListener("", classOf[java.util.Map[String, Any]], new DataListener[java.util.Map[String, Any]] {
-      override def onData(client: SocketIOClient, data: util.Map[String, Any], ackSender: AckRequest): Unit = {
+      override def onData(client: IOClient, data: java.util.Map[String, Any], ackSender: AckRequest): Unit = {
         val event = data.get("method").toString
 
         val json = mapper.writeValueAsString(data.get("params"))
 
-        addSubscriber(SubscriberEvent(client, event, json))
+        SocketIOClient.add(client, event, json)
 
-        getProvider(event).foreach { clazz ⇒
+        getProviders(_ == 0).foreach(replyMessage(ackSender, _, json))
 
-          val methodEvent = clazz.methods.head
-
-          // TODO(Toan) 这里缺少了一种情况
-          // 客户端直接请求数据
-          // 客户端请求广播数据
-          // 客户端订阅广播数据
-          // 主动广播消息
-          methodEvent.event match {
-            case event(_, 0, _, _) ⇒
-              val methodEvent = clazz.methods.head
-              val instance = clazz.instance
-              val resp = EventReflection.invokeMethod(instance, methodEvent, json)
-              ackSender.sendAckData(resp)
-              // replyMessage(ackSender, clazz, json)
-            case event(_, 1, -1, _) ⇒ // broadMessage()
-            case event(_, 2, _, _) ⇒ logger.info("auto reply client message by actor")
-            case _ ⇒ throw new Exception("not supported")
-          }
-        }
       }
     })
 
-    server.start()
+    server.start
   }
 
   def replyMessage(ackSender: AckRequest, clazz: ProviderEventClass[_], json: String): Unit = {
@@ -133,7 +86,7 @@ class SocketIOServer(
 
     val instance = clazz.instance
 
-    val resp = EventReflection.invokeMethod(instance, methodEvent, json)
+    val resp = invokeMethod(instance, methodEvent, Some(json))
 
     ackSender.sendAckData(resp)
 
@@ -143,10 +96,35 @@ class SocketIOServer(
     server.getBroadcastOperations.sendEvent(event, anyRef)
   }
 
-  def stop: Unit = server.stop()
+  def invokeMethod[T: ClassTag](instance: T, method: ProviderEventMethod, data: Option[String]): AnyRef = {
 
-  def sendErrorMessage(ackSender: AckRequest): Unit = {
-    ackSender.sendAckData("error")
+    // 这里还有异常没处理
+    val params = data.nonEmpty && method.paramClazz.nonEmpty match {
+      case true ⇒
+        Some(mapper.readValue(data.get, method.paramClazz.get))
+      case _ ⇒ None
+    }
+
+    val mm = EventReflection.methodMirror(instance, method.method)
+
+    // 这里获取 future
+    val futureResp = params match {
+      case Some(p) ⇒ mm(p)
+      case _ ⇒ mm()
+    }
+
+    // 这里等待返回值
+    val respAny = futureResp match {
+      case f: Future[_] ⇒ Await.result(f, Duration.Inf)
+      case x ⇒ x
+    }
+
+    // 这里没有考虑proto message
+    respAny match {
+      case r: String ⇒ r
+      case r ⇒ mapper.convertValue(r, classOf[java.util.Map[String, Any]])
+    }
+
   }
 
 }
