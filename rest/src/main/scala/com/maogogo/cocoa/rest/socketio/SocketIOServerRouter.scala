@@ -41,8 +41,8 @@ class SocketIOServerRouter extends Actor with LazyLogging {
 
         // for every method
         val router = context.actorOf(
-          RoundRobinPool(5).props(Props[SocketIOServerActor]),
-          s"socketio_actor_${p.clazz.getName}.${m.method.name}")
+          RoundRobinPool(pool).props(Props[SocketIOServerActor]),
+          s"socketio_actor_${m.method.fullName}")
 
         val broadcast = BroadcastMessage(server, p, m)
         context.system.scheduler.schedule(3 seconds, m.event.interval seconds, router, broadcast)
