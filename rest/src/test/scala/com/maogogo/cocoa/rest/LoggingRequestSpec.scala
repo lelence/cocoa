@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.manager
+package com.maogogo.cocoa.rest
 
-import akka.actor.Actor
-import akka.cluster.Cluster
-import com.typesafe.scalalogging.LazyLogging
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.server.directives.{ DebuggingDirectives, LoggingMagnet }
 
-class ClusterNodeManager(implicit cluster: Cluster) extends Actor with LazyLogging {
+class LoggingRequestSpec extends RestSpec {
 
-  override def receive: Receive = {
-    case s: String ⇒ println("")
+  def printRequestMethod(req: HttpRequest): Unit = println(req.method.name)
+
+  val logRequestPrintln = DebuggingDirectives.logRequest(LoggingMagnet(_ => printRequestMethod))
+
+  "test1" in {
+    Get("/") ~> logRequestPrintln(complete("logged")) ~> check {
+      responseAs[String] shouldEqual "logged"
+    }
   }
-
 }

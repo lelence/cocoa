@@ -18,7 +18,7 @@ package com.maogogo.cocoa.common
 
 import com.maogogo.cocoa.common.modules.SysAndConfigModule
 
-trait Application extends App {
+trait Application {
 
   lazy val systemPrefix = s"akka.tcp://${SysAndConfigModule.systemName}@"
 
@@ -33,34 +33,37 @@ trait Application extends App {
    * -s, --seeds Seq[String] cluster seeds
    * -r, --role Seq[String] cluster role
    */
-  new scopt.OptionParser[CommandSettings]("scopt") {
-    head("cocoa", "1.0")
-
-    opt[Int]('p', "port").action((x, c) => {
-      c.copy(port = x)
-    }).text("server port")
-
-    opt[Seq[String]]('s', "seeds").action((x, c) => {
-      c.copy(seeds = x)
-    }).text("cluster seeds")
-
-    opt[Seq[String]]('r', "role").action((x, c) => {
-      c.copy(role = x)
-    }).text("cluster role")
-
-  }.parse(args, CommandSettings()) match {
-    case Some(s) ⇒
-      parser(s); println(logo)
-    case _ ⇒
-  }
 
   val parser: CommandSettings ⇒ Unit
 
   val logo: String
+
+  def main(args: Array[String]) = {
+    new scopt.OptionParser[CommandSettings]("scopt") {
+      head("cocoa", "1.0")
+
+      opt[Int]('p', "port").action((x, c) => {
+        c.copy(port = x)
+      }).text("server port")
+
+      opt[Seq[String]]('s', "seeds").action((x, c) => {
+        c.copy(seeds = x)
+      }).text("cluster seeds")
+
+      opt[Seq[String]]('r', "roles").action((x, c) => {
+        c.copy(roles = x)
+      }).text("cluster role")
+
+    }.parse(args, CommandSettings()) match {
+      case Some(s) ⇒
+        parser(s); println(logo)
+      case _ ⇒
+    }
+  }
 
 }
 
 case class CommandSettings(
   port: Int = 2552,
   seeds: Seq[String] = Seq.empty,
-  role: Seq[String] = Seq.empty)
+  roles: Seq[String] = Seq.empty)

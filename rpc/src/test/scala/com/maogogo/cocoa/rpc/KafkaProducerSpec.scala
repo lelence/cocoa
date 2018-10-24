@@ -32,7 +32,7 @@ class KafkaProducerSpec extends RpcSpec {
     assert(Set.empty.size == 0)
   }
 
-  "kafkaSettings" in {
+  "sinkTest" in {
 
     val config = system.settings.config.getConfig("akka.kafka.producer")
     val producerSettings =
@@ -49,6 +49,7 @@ class KafkaProducerSpec extends RpcSpec {
       case scala.util.Success(value) ⇒ println(value)
       case scala.util.Failure(exception) ⇒ exception.printStackTrace()
     }
+
   }
 
 }

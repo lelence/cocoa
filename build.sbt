@@ -15,7 +15,8 @@ lazy val rest = (project in file("rest"))
   .enablePlugins(JavaServerAppPackaging)
   .settings(
     basicSettings,
-    libraryDependencies ++= httpAndSocketDependency ++ testDependency
+    libraryDependencies ++= httpAndSocketDependency ++ testDependency,
+    libraryDependencies += "com.typesafe.akka" %% "akka-http-testkit" % "10.1.5" % Test
   )
 
 lazy val rpc = (project in file("rpc"))
