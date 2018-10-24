@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest
+package com.maogogo.cocoa.rpc.services
 
-class Test3 {
+import akka.actor.Actor
 
+class TestActor extends Actor {
+  override def receive: Receive = {
+    case s: String ⇒
+      println("====>>>>>>>>>>>>>>>>hello : " + s)
+      sender() ! "hello : " + s
+  }
 }
-

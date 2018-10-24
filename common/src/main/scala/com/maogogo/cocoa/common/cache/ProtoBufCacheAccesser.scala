@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.common.inject
+package com.maogogo.cocoa.common.cache
 
-import akka.actor.{ Actor, IndirectActorProducer }
-import com.google.inject.name.Names
-import com.google.inject.{ Injector, Key }
+import akka.util.ByteString
+import com.maogogo.cocoa.common._
 
-class GuiceActorProducer(actorName: String)(implicit injector: Injector) extends IndirectActorProducer {
+class ProtoBufCacheAccesser[T <: ProtoBuf[T]](
+  implicit
+  val accessor: ReidsByteStringAccessor,
+  c: scalapb.GeneratedMessageCompanion[T]) extends Cacher[String, String, T, ByteString] {
 
-  override def produce(): Actor =
-    injector.getBinding(Key.get(classOf[Actor], Names.named(actorName))).getProvider.get()
-
-  override def actorClass: Class[Actor] = classOf[Actor]
+  override val ks: KeySerializer[String, String] = new StringSerializer
+  override val vs: ValueSerializer[T, ByteString] = new ProtoBufByteStringDeserializer[T]
 
 }

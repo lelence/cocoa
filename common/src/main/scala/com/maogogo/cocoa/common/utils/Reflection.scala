@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest.socketio
+package com.maogogo.cocoa.common.utils
 
 import org.reflections.Reflections
 
@@ -22,7 +22,7 @@ import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
-object EventReflection {
+final object Reflection {
 
   private lazy val defPackage = "com.maogogo.cocoa"
 
@@ -71,26 +71,12 @@ object EventReflection {
     symbol2Tpe(symbol).decls.map(_.asMethod).toSeq
 
   def membersWithNamed[A: TypeTag](cls: Class[_]): Seq[MethodSymbol] = {
-    println(members(cls))
     members(cls).map {
-      case m: MethodSymbol ⇒
-        println("====>>>" + memberNamed[A](m))
-        (m, memberNamed[A](m))
+      case m: MethodSymbol ⇒ (m, memberNamed[A](m))
     }.filter(_._2.nonEmpty).map(_._1)
   }
 
   def memberNamed[A: TypeTag](symbol: Symbol): Option[Annotation] = {
-
-    symbol.annotations.foreach { x ⇒
-
-      println(x)
-
-      println(x.tree.tpe + "###" + typeOf[A])
-
-      println(x.tree.tpe =:= typeOf[A])
-
-    }
-
     symbol.annotations.find(_.tree.tpe =:= typeOf[A])
   }
 
@@ -105,8 +91,12 @@ object EventReflection {
       Some(symbol.returnType)
   }
 
+  def parameters(symbol: MethodSymbol): Seq[ClassSymbol] = {
+    symbol.paramLists.flatMap(_.map(_.typeSignature.typeSymbol.asClass))
+  }
+
   def parameterSingleClazz(symbol: MethodSymbol): Option[Class[_]] = {
-    symbol.paramLists.flatMap(_.map(_.typeSignature.typeSymbol.asClass)).headOption.map(symbol2Class)
+    parameters(symbol).headOption.map(symbol2Class)
   }
 
   def methodMirror[T: ClassTag](i: T, methodSymbol: MethodSymbol): MethodMirror = {

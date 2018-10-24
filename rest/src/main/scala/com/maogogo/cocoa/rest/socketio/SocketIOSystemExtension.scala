@@ -35,7 +35,7 @@ object SocketIOSystemExtension extends ExtensionId[SocketIOSystemExtensionImpl] 
 
 class SocketIOSystemExtensionImpl(router: ActorRef) extends Extension {
 
-  import EventReflection._
+  import com.maogogo.cocoa.common.utils.Reflection._
 
   import scala.reflect.runtime.universe._
 

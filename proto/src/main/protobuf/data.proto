@@ -5,6 +5,11 @@ option java_package = "com.maogogo.cocoa.protobuf";
 package com.maogogo.cocoa.protobuf;
 
 import "google/protobuf/wrappers.proto";
+import "scalapb/scalapb.proto";
+
+option (scalapb.options) = {
+  no_primitive_wrappers: true
+};
 
 message RestSettings {
     int32 port = 1;
@@ -20,5 +25,7 @@ message RpcSettings {
 }
 
 message RedisSetting {
+
+    string aa_bb = 1;
 
 }

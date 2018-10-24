@@ -3,7 +3,12 @@ import sbt._
 object Dependencies {
   val slf4jVersion = "1.7.25"
   val logbackVersion = "1.2.3"
-	lazy val akkaVersion = "2.5.17"
+  lazy val akkaVersion = "2.5.17"
+
+  lazy val testDependency = Seq(
+    "org.scalatest" %% "scalatest" % "3.0.5",
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion
+  ) map (_ % Test)
 
   lazy val commonDependency = Seq(
     "org.slf4j" % "slf4j-api" % slf4jVersion,
@@ -18,10 +23,11 @@ object Dependencies {
     "com.thesamet.scalapb" %% "scalapb-json4s" % "0.7.1",
     "org.json4s" %% "json4s-native" % "3.6.1",
     "org.reflections" % "reflections" % "0.9.11"
+
   )
 
   lazy val actorDependency = Seq(
-  	"com.typesafe.akka" %% "akka-actor" % akkaVersion,
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "com.typesafe.akka" %% "akka-remote" % akkaVersion,
     "com.typesafe.akka" %% "akka-stream" % akkaVersion,
@@ -32,21 +38,23 @@ object Dependencies {
   )
 
   lazy val httpAndSocketDependency = Seq(
-  	"com.typesafe.akka" %% "akka-http" % "10.1.5",
+    "com.typesafe.akka" %% "akka-http" % "10.1.5",
     "de.heikoseeberger" %% "akka-http-json4s" % "1.22.0",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.7",
     "com.corundumstudio.socketio" % "netty-socketio" % "1.7.16"
   )
 
   lazy val driverDependency = Seq(
-  	"com.github.etaty" %% "rediscala" % "1.8.0",
+    "com.github.etaty" %% "rediscala" % "1.8.0",
     "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "0.20",
     "com.typesafe.akka" %% "akka-stream-kafka" % "0.22",
+    "com.lightbend.akka" %% "akka-stream-alpakka-mongodb" % "0.20",
+    "org.mongodb.scala" %% "mongo-scala-driver" % "2.4.2",
     "mysql" % "mysql-connector-java" % "5.1.47"
   )
 
   lazy val scalapbDependency = Seq(
-  	"com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion,
+    "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion,
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
   )
 

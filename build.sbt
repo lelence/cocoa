@@ -15,7 +15,7 @@ lazy val rest = (project in file("rest"))
   .enablePlugins(JavaServerAppPackaging)
   .settings(
     basicSettings,
-    libraryDependencies ++= httpAndSocketDependency
+    libraryDependencies ++= httpAndSocketDependency ++ testDependency
   )
 
 lazy val rpc = (project in file("rpc"))
@@ -23,7 +23,8 @@ lazy val rpc = (project in file("rpc"))
   .dependsOn(common)
   .enablePlugins(JavaAppPackaging)
   .settings(
-    basicSettings
+    basicSettings,
+    libraryDependencies ++= testDependency
   )
 
 lazy val proto = (project in file("proto"))

@@ -16,106 +16,31 @@
 
 package com.maogogo.cocoa.rest
 
-import akka.actor.ActorSystem
-import akka.cluster.singleton.{ ClusterSingletonProxy, ClusterSingletonProxySettings }
-import akka.util.Timeout
-import com.maogogo.cocoa.common.GuiceAkka
-import com.maogogo.cocoa.protobuf.data._
+import com.maogogo.cocoa.common.{ Application, CommandSettings, GuiceAkka }
 import com.maogogo.cocoa.rest.http.HttpServer
-import com.maogogo.cocoa.rest.socketio.{ SocketIOSettings, SocketIOSystemExtension }
-import com.maogogo.cocoa.rest.socketio.EventTest
 import com.typesafe.config.ConfigFactory
 
-import scala.concurrent.duration._
+object Main extends Application {
 
-object Main extends App {
+  import net.codingwell.scalaguice.InjectorExtensions._
 
-  val config = ConfigFactory.parseString(
-    s"""
-       |akka.remote.netty.tcp.port=0
-       |akka.cluster.roles=["rest"]
-     """.stripMargin).withFallback(ConfigFactory.load())
-  // akka.cluster.client.initial-contacts=["akka.tcp://aa@127.0.0.1:20550/system/receptionist"]
-  //akka.cluster.seed-nodes=["akka.tcp://aa@127.0.0.1:20550"]
-  implicit val system = ActorSystem("aa", config)
-  // val cluster = Cluster(system)
+  override val parser = (settings: CommandSettings) ⇒ {
 
-  //  client {
-  //    # Actor paths of the ClusterReceptionist actors on the servers (cluster nodes)
-  //    # that the client will try to contact initially. It is mandatory to specify
-  //    # at least one initial contact.
-  //    # Comma separated full actor paths defined by a string on the form of
-  //    # "akka.tcp://system@hostname:port/system/receptionist"
-  //    initial-contacts = []
+    val seeds = settings.seeds.map(s ⇒ s""""${systemPrefix}${s.trim}"""").mkString(",")
 
-  //  val d = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
+    val config = ConfigFactory
+      .parseString(
+        s"""
+           |akka.remote.netty.tcp.port=${settings.port}
+           |akka.remote.netty.tcp.hostname="127.0.0.1"
+           |akka.cluster.seed-nodes=[$seeds]
+           """.stripMargin)
+      .withFallback(ConfigFactory.load())
 
-  implicit val timeout = Timeout(5 seconds)
+    val injector = GuiceAkka(config, ServicesModule)
 
-  val dd = system.actorOf(
-    ClusterSingletonProxy.props(
-      settings = ClusterSingletonProxySettings(system).withRole("rpc"),
-      singletonManagerPath = "/user/hello"),
-    name = "masterProxy")
+    injector.instance[HttpServer]
 
-  // val ee = d ? ClusterClient.Send("/user/hello", "hello", localAffinity = true)
-
-  //  val cluster = Cluster(system)
-
-  //  val c = system.actorOf(ClusterClient.props(
-  //    ClusterClientSettings(system).withInitialContacts(initialContacts)), "client")
-  //  c ! ClusterClient.Send("/user/serviceA", "hello", localAffinity = true)
-
-  //  val dd = system.actorOf(FromConfig.props(), "factorialFrontend")
-  //
-  //  println("dd =>>" + dd)
-  //  val ee: Future[Any] = dd ? "Toan"
-  //  println("afwfef ==>>>" + ee)
-  //
-  //  ee.onComplete {
-  //    case scala.util.Success(value) ⇒ println("vvvv ==>>>" + value)
-  //    case scala.util.Failure(ex) ⇒ ex.printStackTrace()
-  //  }
-
-  //  val dd = system.actorOf(
-  //    ClusterRouterGroup(ConsistentHashingGroup(Nil), ClusterRouterGroupSettings(
-  //      totalInstances = 100, routeesPaths = List("/user/hello"),
-  //      allowLocalRoutees = true)).props(),
-  //    name = "workerRouter2")
-  //
-  //  dd ! "hahah"
-
-  //  cluster.system.actorOf()
-
-  new scopt.OptionParser[RestSettings]("cocoa") {
-    head("cocoa", "0.0.1")
-
-    opt[Int]('p', "port").action((x, c) => {
-      c.copy(port = x)
-    }).text("server port")
-
-    opt[String]('c', "config").action((x, c) => {
-      c.copy(file = x)
-    }).text("config file")
-
-  }.parse(args, RestSettings()) match {
-    case Some(settings) ⇒
-
-      val injector = GuiceAkka.withSystem(ServicesModule)
-      import net.codingwell.scalaguice.InjectorExtensions._
-
-      injector.instance[HttpServer]
-
-      val system = injector.instance[ActorSystem]
-
-      val settings = SocketIOSettings().register[EventTest]
-
-      val dd = SocketIOSystemExtension(system).init(injector, settings)
-
-      dd.start
-
-      println(logo)
-    case None ⇒
   }
 
   lazy val logo =

@@ -8,6 +8,10 @@ object Settings {
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.12.7",
     organizationName := "Maogogo Workshop",
+    scalacOptions := Seq("-deprecation",
+      "-feature",
+      "-language:implicitConversions",
+      "-language:postfixOps"),
     startYear := Some(2018),
     licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
   )

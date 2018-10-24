@@ -22,6 +22,8 @@ import com.corundumstudio.socketio.listener.DataListener
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.inject.Injector
+import com.maogogo.cocoa.common.utils.Reflection
+import org.json4s.jackson.JsonMethods
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
@@ -47,12 +49,6 @@ private[socketio] class SocketIOServer(
   server: IOServer,
   router: ActorRef) {
 
-  private lazy val mapper = {
-    val mapper = new ObjectMapper()
-    mapper.registerModule(DefaultScalaModule)
-    mapper
-  }
-
   def getProviders(fallback: Int ⇒ Boolean): Seq[ProviderEventClass[_]] = {
     providers.map { p ⇒
       val ms = p.methods.filter(e ⇒ fallback(e.event.broadcast))
@@ -68,7 +64,7 @@ private[socketio] class SocketIOServer(
       override def onData(client: IOClient, data: java.util.Map[String, Any], ackSender: AckRequest): Unit = {
         val event = data.get("method").toString
 
-        val json = mapper.writeValueAsString(data.get("params"))
+        val json = JsonMethods.mapper.writeValueAsString(data.get("params"))
 
         SocketIOClient.add(client, event, json)
 
@@ -101,11 +97,11 @@ private[socketio] class SocketIOServer(
     // 这里还有异常没处理
     val params = data.nonEmpty && method.paramClazz.nonEmpty match {
       case true ⇒
-        Some(mapper.readValue(data.get, method.paramClazz.get))
+        Some(JsonMethods.mapper.readValue(data.get, method.paramClazz.get))
       case _ ⇒ None
     }
 
-    val mm = EventReflection.methodMirror(instance, method.method)
+    val mm = Reflection.methodMirror(instance, method.method)
 
     // 这里获取 future
     val futureResp = params match {
@@ -122,7 +118,7 @@ private[socketio] class SocketIOServer(
     // 这里没有考虑proto message
     respAny match {
       case r: String ⇒ r
-      case r ⇒ mapper.convertValue(r, classOf[java.util.Map[String, Any]])
+      case r ⇒ JsonMethods.mapper.convertValue(r, classOf[java.util.Map[String, Any]])
     }
 
   }

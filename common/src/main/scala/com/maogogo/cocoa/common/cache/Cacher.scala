@@ -16,8 +16,8 @@
 
 package com.maogogo.cocoa.common.cache
 
+import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait Cacher[K, KS, V, VS] {
 
@@ -25,17 +25,17 @@ trait Cacher[K, KS, V, VS] {
   val vs: ValueSerializer[V, VS]
   val accessor: Accessor[KS, VS]
 
-  private implicit def toKeySerializer(k: K): KS = ks.serialize(k)
+  implicit def toKeySerializer(k: K): KS = ks.serialize(k)
 
-  private implicit def toValueDeserializer(vsFuture: Future[Option[VS]]): Future[Option[V]] =
+  implicit def toValueDeserializer(
+    vsFuture: Future[Option[VS]]): Future[Option[V]] = vsFuture.map(_.map(vs.deserialize))
+
+  implicit def toValueDeserializers(vsFuture: Future[Seq[VS]]): Future[Seq[V]] =
     vsFuture.map(_.map(vs.deserialize))
 
-  private implicit def toValueDeserializers(vsFuture: Future[Seq[VS]]): Future[Seq[V]] =
-    vsFuture.map(_.map(vs.deserialize))
+  implicit def toValueSerializer(v: V): VS = vs.serialize(v)
 
-  private implicit def toValueSerializer(v: V): VS = vs.serialize(v)
-
-  private implicit def toValueSerializers(v: Seq[V]): Seq[VS] = v.map(toValueSerializer)
+  implicit def toValueSerializers(v: Seq[V]): Seq[VS] = v.map(toValueSerializer)
 
   def get(k: K): Future[Option[V]] = accessor.get(k)
 

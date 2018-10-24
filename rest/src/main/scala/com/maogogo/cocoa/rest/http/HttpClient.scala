@@ -46,7 +46,7 @@ trait HttpClient {
     proxy: Option[Boolean] = None)(
     implicit
     system: ActorSystem): Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] = {
-    Http().outgoingConnectionHttps(host, port, settings = getSettings(proxy))
+    Http().outgoingConnectionHttps(host, port, settings = proxySettings(proxy))
   }
 
   def http(
@@ -55,10 +55,10 @@ trait HttpClient {
     proxy: Option[Boolean] = None)(
     implicit
     system: ActorSystem): Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] = {
-    Http().outgoingConnection(host, port, settings = getSettings(proxy))
+    Http().outgoingConnection(host, port, settings = proxySettings(proxy))
   }
 
-  private[http] def getSettings(proxy: Option[Boolean] = None) = {
+  private[http] def proxySettings(proxy: Option[Boolean] = None) = {
     proxy match {
       case Some(true) ⇒
         val httpsProxy = ClientTransport.httpsProxy(
