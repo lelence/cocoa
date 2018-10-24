@@ -14,24 +14,8 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common.utils
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
-import com.google.inject.name.Named
-import javax.inject.Inject
+object MD5 {
 
-import scala.concurrent.Future
-
-class HelloActor @Inject() (@Named("dudu") testActor: ActorRef) extends Actor {
-
-  //    val testActor = injector[Ac]
-
-  // val testActor = injectorRef("dudu")
-  // injectorRef("dudu")
-
-  override def receive: Receive = {
-    case s: String ⇒
-      println("ss ==>>>" + s)
-      sender() ! Future.successful("Hello: " + s)
-  }
 }

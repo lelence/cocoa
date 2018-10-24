@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common.utils
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
-import com.google.inject.name.Named
-import javax.inject.Inject
+import java.util.UUID
 
-import scala.concurrent.Future
+import com.google.common.base.Charsets
+import com.google.common.hash.Hashing
 
-class HelloActor @Inject() (@Named("dudu") testActor: ActorRef) extends Actor {
+final object UID extends App {
 
-  //    val testActor = injector[Ac]
-
-  // val testActor = injectorRef("dudu")
-  // injectorRef("dudu")
-
-  override def receive: Receive = {
-    case s: String ⇒
-      println("ss ==>>>" + s)
-      sender() ! Future.successful("Hello: " + s)
+  def randomId: String = {
+    val hashing = (s: String) ⇒ Hashing.murmur3_32().hashString(s, Charsets.UTF_8).toString
+    s"${hashing(UUID.randomUUID().toString)}-${hashing(UUID.randomUUID().toString)}"
   }
+
 }

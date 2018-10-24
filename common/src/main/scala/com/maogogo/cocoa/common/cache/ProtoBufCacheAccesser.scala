@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest
+package com.maogogo.cocoa.common.cache
 
-import org.json4s.JsonAST.{ JNull, JString }
-import org.json4s.{ CustomSerializer, DefaultFormats }
+import akka.util.ByteString
+import com.maogogo.cocoa.common._
 
-trait Json4sSupport extends de.heikoseeberger.akkahttpjson4s.Json4sSupport {
+class ProtoBufCacheAccesser[T <: ProtoBuf[T]](
+  implicit
+  val accessor: ReidsByteStringAccessor,
+  c: scalapb.GeneratedMessageCompanion[T]) extends Cacher[String, String, T, ByteString] {
 
-  implicit val serialization = org.json4s.native.Serialization
-  implicit val formats = DefaultFormats + EmptyValueSerializer
+  override val ks: KeySerializer[String, String] = new StringSerializer
+  override val vs: ValueSerializer[T, ByteString] = new ProtoBufByteStringDeserializer[T]
 
 }
-
-private class EmptyValueSerializer
-  extends CustomSerializer[String](
-    _ ⇒
-      ({
-        case JNull ⇒ ""
-        case JString(x) => x
-      }, {
-        case "" ⇒ JNull
-      }))
-
-private object EmptyValueSerializer extends EmptyValueSerializer

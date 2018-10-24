@@ -16,20 +16,39 @@
 
 package com.maogogo.cocoa.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.maogogo.cocoa.common._
-import scalapb.json4s.JsonFormat
+import scala.reflect.runtime.universe._
 
 package object socketio {
 
-  implicit def string2ProtoBuf[T <: ProtoBuf[T]](json: String)(
-    implicit
-    c: scalapb.GeneratedMessageCompanion[T]): T =
-    JsonFormat.fromJsonString[T](json)
+  type IOServer = com.corundumstudio.socketio.SocketIOServer
 
-  implicit def protoBuf2JavaMap[T <: ProtoBuf[T]](t: T): java.util.Map[String, Any] = {
-    val mapper = new ObjectMapper()
-    mapper.readValue(JsonFormat.toJsonString(t), classOf[java.util.Map[String, Any]])
+  type IOClient = com.corundumstudio.socketio.SocketIOClient
+
+  // broadcat => 0: 不广播, 1: 广播订阅者, 2: 主动给广播所有(这种情况event无效)
+  case class event(event: String, broadcast: Int, interval: Long, replyTo: String) extends scala.annotation.StaticAnnotation {
+
+    def this(event: String) =
+      this(event, broadcast = 0, interval = -1, replyTo = "")
+
+    def this(broadcast: Int, interval: Long, replyTo: String) =
+      this(event = "", broadcast = broadcast, interval = interval, replyTo = replyTo)
   }
+
+  case class ProviderEventClass[T](instance: T, clazz: Class[_ <: T], methods: Seq[ProviderEventMethod])
+
+  case class ProviderEventMethod(event: event, method: MethodSymbol,
+    paramClazz: Option[Class[_]], futureType: Type)
+
+  // 客户端订阅的消息
+  case class SubscriberEvent(client: IOClient, event: String, json: String)
+
+  case class BroadcastMessage(server: SocketIOServer, provider: ProviderEventClass[_], method: ProviderEventMethod)
+
+  case class StartBroadcast(server: SocketIOServer, providers: Seq[ProviderEventClass[_]], pool: Int)
+
+  final case class SocketIOException(
+    message: String = "",
+    cause: Throwable = None.orNull)
+    extends Exception(message, cause)
 
 }

@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.manager
+package com.maogogo.cocoa.rest.socketio
 
-import akka.actor.Actor
-import akka.cluster.Cluster
-import com.typesafe.scalalogging.LazyLogging
+object SocketIOClient {
 
-class ClusterNodeManager(implicit cluster: Cluster) extends Actor with LazyLogging {
+  private val subscribers = new java.util.HashSet[SubscriberEvent]
 
-  override def receive: Receive = {
-    case s: String ⇒ println("")
+  def add(client: IOClient, event: String, json: String): Unit = {
+    subscribers.add(SubscriberEvent(client, event, json))
+  }
+
+  def getClients(fallback: String ⇒ Boolean): Seq[SubscriberEvent] = {
+    import scala.collection.JavaConverters._
+    subscribers.asScala.toSeq.filter(x ⇒ fallback(x.event))
   }
 
 }
+

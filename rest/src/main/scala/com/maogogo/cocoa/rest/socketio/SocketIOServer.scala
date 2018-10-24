@@ -17,56 +17,110 @@
 package com.maogogo.cocoa.rest.socketio
 
 import akka.actor.ActorRef
-import com.maogogo.cocoa.common._
-import com.corundumstudio.socketio.Configuration
+import com.corundumstudio.socketio.AckRequest
+import com.corundumstudio.socketio.listener.DataListener
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.google.inject.Injector
+import com.maogogo.cocoa.common.utils.Reflection
+import org.json4s.jackson.JsonMethods
 
-class SocketIOServer(port: Int = 9092) {
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, Future }
+import scala.reflect.ClassTag
 
-  private lazy val config: Configuration = {
-    val _config = new Configuration
-    _config.setHostname("localhost")
-    _config.setPort(port)
-    _config.setMaxFramePayloadLength(1024 * 1024)
-    _config.setMaxHttpContentLength(1024 * 1024)
-    _config.getSocketConfig.setReuseAddress(true)
-    _config
+private[socketio] object SocketIOServer {
+
+  def apply(
+    injector: Injector,
+    settings: SocketIOSettings,
+    providers: Seq[ProviderEventClass[_]],
+    server: com.corundumstudio.socketio.SocketIOServer,
+    router: ActorRef): SocketIOServer = {
+    new SocketIOServer(injector, settings, providers, server, router)
   }
 
-  private lazy val server = {
-    val _server = new com.corundumstudio.socketio.SocketIOServer(config)
-    _server.addConnectListener(new ConnectionListener)
-    _server.addDisconnectListener(new DisconnectionListener)
-    _server
+}
+
+private[socketio] class SocketIOServer(
+  injector: Injector,
+  settings: SocketIOSettings,
+  providers: Seq[ProviderEventClass[_]],
+  server: IOServer,
+  router: ActorRef) {
+
+  def getProviders(fallback: Int ⇒ Boolean): Seq[ProviderEventClass[_]] = {
+    providers.map { p ⇒
+      val ms = p.methods.filter(e ⇒ fallback(e.event.broadcast))
+      p.copy(methods = ms)
+    }.filter(_.methods.nonEmpty)
   }
 
-  def registerMessage[I <: ProtoBuf[I], O <: ProtoBuf[O]](event: String, actorRef: ActorRef)(
-    implicit
-    c: scalapb.GeneratedMessageCompanion[I]): Unit = {
-    implicit def _string2ProtoBuf = string2ProtoBuf[I] _
+  def start: Unit = {
 
-    implicit def _protoBuf2JavaMap = protoBuf2JavaMap[O] _
+    router ! StartBroadcast(this, getProviders(_ != 0), settings.pool)
 
-    // server.addConnectListener()
+    server.addEventListener("", classOf[java.util.Map[String, Any]], new DataListener[java.util.Map[String, Any]] {
+      override def onData(client: IOClient, data: java.util.Map[String, Any], ackSender: AckRequest): Unit = {
+        val event = data.get("method").toString
 
-    server.addEventListener(event, classOf[Any], new DataListener[I, O](event, actorRef))
+        val json = JsonMethods.mapper.writeValueAsString(data.get("params"))
+
+        SocketIOClient.add(client, event, json)
+
+        getProviders(_ == 0).foreach(replyMessage(ackSender, _, json))
+
+      }
+    })
+
+    server.start
   }
 
-  def registerEvent[I, O](event: String, actorRef: ActorRef)(
-    implicit
-    serializr: String ⇒ I,
-    deserializr: O ⇒ java.util.Map[String, Any]): Unit = {
-    server.addEventListener(event, classOf[Any], new DataListener[I, O](event, actorRef))
+  def replyMessage(ackSender: AckRequest, clazz: ProviderEventClass[_], json: String): Unit = {
+
+    val methodEvent = clazz.methods.head
+
+    val instance = clazz.instance
+
+    val resp = invokeMethod(instance, methodEvent, Some(json))
+
+    ackSender.sendAckData(resp)
+
   }
 
-  def broadcastMessage[T](msg: BroadcastMessage[T])(
-    implicit
-    deserializr: T ⇒ java.util.Map[String, Any]): Unit = {
-    val map = deserializr(msg.t)
-    server.getBroadcastOperations.sendEvent(msg.event, map)
+  def broadMessage(event: String, anyRef: AnyRef): Unit = {
+    server.getBroadcastOperations.sendEvent(event, anyRef)
   }
 
-  def start: Unit = server.start()
+  def invokeMethod[T: ClassTag](instance: T, method: ProviderEventMethod, data: Option[String]): AnyRef = {
 
-  def stop: Unit = server.stop()
+    // 这里还有异常没处理
+    val params = data.nonEmpty && method.paramClazz.nonEmpty match {
+      case true ⇒
+        Some(JsonMethods.mapper.readValue(data.get, method.paramClazz.get))
+      case _ ⇒ None
+    }
+
+    val mm = Reflection.methodMirror(instance, method.method)
+
+    // 这里获取 future
+    val futureResp = params match {
+      case Some(p) ⇒ mm(p)
+      case _ ⇒ mm()
+    }
+
+    // 这里等待返回值
+    val respAny = futureResp match {
+      case f: Future[_] ⇒ Await.result(f, Duration.Inf)
+      case x ⇒ x
+    }
+
+    // 这里没有考虑proto message
+    respAny match {
+      case r: String ⇒ r
+      case r ⇒ JsonMethods.mapper.convertValue(r, classOf[java.util.Map[String, Any]])
+    }
+
+  }
 
 }

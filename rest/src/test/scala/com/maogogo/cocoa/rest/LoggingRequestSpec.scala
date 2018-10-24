@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.common.inject
+package com.maogogo.cocoa.rest
 
-import akka.actor.{ Actor, IndirectActorProducer }
-import com.google.inject.name.Names
-import com.google.inject.{ Injector, Key }
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.server.directives.{ DebuggingDirectives, LoggingMagnet }
 
-class GuiceActorProducer(actorName: String)(implicit injector: Injector) extends IndirectActorProducer {
+class LoggingRequestSpec extends RestSpec {
 
-  override def produce(): Actor =
-    injector.getBinding(Key.get(classOf[Actor], Names.named(actorName))).getProvider.get()
+  def printRequestMethod(req: HttpRequest): Unit = println(req.method.name)
 
-  override def actorClass: Class[Actor] = classOf[Actor]
+  val logRequestPrintln = DebuggingDirectives.logRequest(LoggingMagnet(_ => printRequestMethod))
 
+  "test1" in {
+    Get("/") ~> logRequestPrintln(complete("logged")) ~> check {
+      responseAs[String] shouldEqual "logged"
+    }
+  }
 }

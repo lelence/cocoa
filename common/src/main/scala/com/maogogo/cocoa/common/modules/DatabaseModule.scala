@@ -16,15 +16,21 @@
 
 package com.maogogo.cocoa.common.modules
 
-import akka.actor.Actor
-import com.maogogo.cocoa.common.inject._
+import akka.stream.alpakka.slick.scaladsl.SlickSession
+import com.google.inject.AbstractModule
+import net.codingwell.scalaguice.ScalaModule
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcProfile
 
-abstract class ClusterActorInjectorModule {
+object DatabaseModule {
 
-  //  def registerSingleton[T <: Actor : Manifest] = {
-  //
-  //    InjectExt(system)
-  //
-  //  }
+  def apply(path: String = "slick-mysql"): AbstractModule with ScalaModule = {
+    new AbstractModule with ScalaModule {
+      override def configure(): Unit = {
+        val databaseConfig = DatabaseConfig.forConfig[JdbcProfile](path)
+        bind[SlickSession].toInstance(SlickSession.forConfig(databaseConfig))
+      }
+    }
+  }
 
 }

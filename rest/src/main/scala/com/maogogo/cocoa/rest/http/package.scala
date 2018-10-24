@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.rest
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
-import com.google.inject.name.Named
-import javax.inject.Inject
+import akka.http.scaladsl.model.{ HttpMethods, HttpRequest, Uri }
 
-import scala.concurrent.Future
+package object http {
 
-class HelloActor @Inject() (@Named("dudu") testActor: ActorRef) extends Actor {
+  object Get {
+    def apply(uri: String): HttpRequest =
+      HttpRequest(method = HttpMethods.GET, uri = Uri(uri))
 
-  //    val testActor = injector[Ac]
-
-  // val testActor = injectorRef("dudu")
-  // injectorRef("dudu")
-
-  override def receive: Receive = {
-    case s: String ⇒
-      println("ss ==>>>" + s)
-      sender() ! Future.successful("Hello: " + s)
+    def apply(uri: Uri): HttpRequest =
+      HttpRequest(method = HttpMethods.GET, uri = uri)
   }
+
+  object Post {
+
+    def apply(uri: String): HttpRequest =
+      HttpRequest(method = HttpMethods.POST, uri = Uri(uri))
+
+    def apply(uri: Uri): HttpRequest =
+      HttpRequest(method = HttpMethods.POST, uri = uri)
+
+  }
+
 }

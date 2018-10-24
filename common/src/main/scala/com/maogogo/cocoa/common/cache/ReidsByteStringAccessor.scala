@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common.cache
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
-import com.google.inject.name.Named
-import javax.inject.Inject
+import akka.util.ByteString
+import redis.RedisCommands
 
 import scala.concurrent.Future
 
-class HelloActor @Inject() (@Named("dudu") testActor: ActorRef) extends Actor {
+class ReidsByteStringAccessor(redis: RedisCommands) extends Accessor[String, ByteString] {
 
-  //    val testActor = injector[Ac]
+  override def get(ks: String): Future[Option[ByteString]] = redis.get(ks)
 
-  // val testActor = injectorRef("dudu")
-  // injectorRef("dudu")
+  override def set(ks: String, vs: ByteString, ttl: Option[Long]): Future[Boolean] = redis.set(ks, vs, exSeconds = ttl)
 
-  override def receive: Receive = {
-    case s: String ⇒
-      println("ss ==>>>" + s)
-      sender() ! Future.successful("Hello: " + s)
-  }
+  override def push(ks: String, vss: Seq[ByteString]): Future[Long] = redis.lpush(ks, vss: _*)
+
+  override def pull(ks: String, start: Long, stop: Long): Future[Seq[ByteString]] = redis.lrange(ks, start, stop)
 }

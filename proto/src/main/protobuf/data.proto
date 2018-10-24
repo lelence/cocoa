@@ -6,15 +6,16 @@ package com.maogogo.cocoa.protobuf;
 
 import "google/protobuf/wrappers.proto";
 
-message RestSettings {
-    int32 port = 1;
-    string file = 2;
-}
-
 message RpcSettings {
     int32 port = 1;
     int32 stat = 2;
     string file = 3;
     repeated string seeds = 4;
     repeated string roles = 5;
+}
+
+message RedisSetting {
+
+    string aa_bb = 1;
+
 }

@@ -16,14 +16,28 @@
 
 package com.maogogo.cocoa.rest
 
+import akka.actor.{ ActorRef, ActorSystem }
+import com.google.inject.name.Named
+import com.google.inject.{ AbstractModule, Provides, Singleton }
+import com.maogogo.cocoa.common.inject._
 import com.maogogo.cocoa.rest.endpoints.RootEndpoint
+import com.maogogo.cocoa.rest.http.HttpServer
 import net.codingwell.scalaguice.ScalaModule
 
-trait ServicesModule extends ScalaModule {
+trait ServicesModule extends AbstractModule with ScalaModule {
 
   override def configure(): Unit = {
     bind[RootEndpoint]
     bind[HttpServer]
+    // bind[EventTest].to[EventTestImpl]
+
+  }
+
+  @Provides
+  @Singleton
+  @Named("uhaha")
+  def aa(implicit system: ActorSystem): ActorRef = {
+    clusterProxy("/user/haha", "uhaha")
   }
 
 }

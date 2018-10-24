@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest.socketio
+package com.maogogo.cocoa.rpc.services
 
-case class SocketInMessage[T](event: String, t: T, headers: Map[String, String])
+import akka.actor.Actor
 
-trait SocketOutMessage
-
-case class BroadcastMessage[T](event: String, t: T) extends SocketOutMessage
-
-case class EventMessage[T](event: String, t: T) extends SocketOutMessage
-
-case class ReplayMessage[T](t: T) extends SocketOutMessage
-
-case object NoneMessage extends SocketOutMessage
+class TestActor extends Actor {
+  override def receive: Receive = {
+    case s: String ⇒
+      println("====>>>>>>>>>>>>>>>>hello : " + s)
+      sender() ! "hello : " + s
+  }
+}
