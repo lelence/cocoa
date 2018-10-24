@@ -17,10 +17,8 @@
 package com.maogogo.cocoa.common.modules
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.google.inject.{ AbstractModule, Provider }
 import com.maogogo.cocoa.common.cache.ReidsByteStringAccessor
-import com.typesafe.config.Config
 import javax.inject.Inject
 import net.codingwell.scalaguice.ScalaModule
 import redis.{ RedisClient, RedisCluster, RedisCommands, RedisServer }
@@ -30,13 +28,14 @@ object RedisAccessorModule {
   def apply(): AbstractModule with ScalaModule = {
     new AbstractModule with ScalaModule {
       override def configure(): Unit = {
-
-        // bind[RedisAccessorProvider].toProvider[RedisAccessorProvider].asEagerSingleton()
+        bind[ReidsByteStringAccessor].toProvider[RedisAccessorProvider].asEagerSingleton()
       }
     }
   }
 
-  private class RedisAccessorProvider(implicit system: ActorSystem) extends Provider[ReidsByteStringAccessor] {
+  private class RedisAccessorProvider @Inject() (
+    implicit
+    system: ActorSystem) extends Provider[ReidsByteStringAccessor] {
     override def get(): ReidsByteStringAccessor = {
       import scala.collection.JavaConverters._
 
