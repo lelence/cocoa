@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest.socketio
+package com.maogogo.cocoa.rest.socketio_bak
 
 import org.slf4j.LoggerFactory
 
-class ConnectionListener extends IOListener {
+class ConnectionListener extends com.corundumstudio.socketio.listener.ConnectListener {
 
   lazy val logger = LoggerFactory.getLogger(getClass)
 
@@ -34,5 +34,4 @@ class DisconnectionListener extends com.corundumstudio.socketio.listener.Disconn
   override def onDisconnect(client: IOClient): Unit = {
     logger.info(s"SocketIO: remote ${client.getRemoteAddress.toString} has disconnected")
   }
-
 }

@@ -16,10 +16,10 @@
 
 package com.maogogo.cocoa.rpc
 
-import com.maogogo.cocoa.common.inject._
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import com.google.inject._
 import com.google.inject.name.Named
+import com.maogogo.cocoa.common.inject._
 import com.maogogo.cocoa.rpc.services.{ HelloActor, TestActor }
 import net.codingwell.scalaguice.ScalaModule
 
@@ -33,14 +33,17 @@ trait ServicesModule extends AbstractModule with ScalaModule {
   @Singleton
   @Named("haha")
   def aa(implicit system: ActorSystem, @Named("dudu") testActor: ActorRef): ActorRef = {
-    Props(classOf[HelloActor], testActor).registerSingleton("dudu")
+
+    actorRef[HelloActor]("dudu", testActor)
+    // Props(classOf[HelloActor], testActor).registerSingleton("dudu")
   }
 
   @Provides
   @Singleton
   @Named("dudu")
   def bb(implicit system: ActorSystem): ActorRef = {
-    Props(classOf[TestActor]).register("dudu")
+    // Props(classOf[TestActor]).register("dudu")
+    clusterSingleton[TestActor]("dudu")
   }
 
 }

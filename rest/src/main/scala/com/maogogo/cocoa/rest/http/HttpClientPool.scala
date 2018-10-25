@@ -16,9 +16,13 @@
 
 package com.maogogo.cocoa.rest.http
 
+import java.net.InetSocketAddress
+
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
+import akka.http.scaladsl.{ ClientTransport, Http }
 import akka.http.scaladsl.model.{ HttpRequest, HttpResponse }
+import akka.http.scaladsl.settings.{ ClientConnectionSettings, ConnectionPoolSettings }
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.{ ActorMaterializer, OverflowStrategy, QueueOfferResult }
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 
@@ -32,18 +36,18 @@ trait HttpClientPool {
   implicit val ex = system.dispatcher
 
   // Http().cachedHostConnectionPool[Promise[HttpResponse]]("akka.io")
-  private[http] val poolClientFlow: Flow[(HttpRequest, Promise[HttpResponse]), (Try[HttpResponse], Promise[HttpResponse]), Http.HostConnectionPool]
+  private[http] val connection: Flow[(HttpRequest, Promise[HttpResponse]), (Try[HttpResponse], Promise[HttpResponse]), Http.HostConnectionPool]
 
   private[http] lazy val queue =
     Source.queue[(HttpRequest, Promise[HttpResponse])](100, OverflowStrategy.dropNew)
-      .via(poolClientFlow)
+      .via(connection)
       .toMat(Sink.foreach({
         case ((Success(resp), p)) => p.success(resp)
         case ((Failure(e), p)) => p.failure(e)
       }))(Keep.left)
       .run()
 
-  def http(request: HttpRequest): Future[HttpResponse] = {
+  def dispatcher = (request: HttpRequest) ⇒ {
     val responsePromise = Promise[HttpResponse]()
     queue.offer(request -> responsePromise).flatMap {
       case QueueOfferResult.Enqueued => responsePromise.future
@@ -53,6 +57,39 @@ trait HttpClientPool {
     }
   }
 
-  // Http().cachedHostConnectionPool[Promise[HttpResponse]]("akka.io")
+  def https(
+    host: String,
+    port: Int = 443,
+    proxy: Option[Boolean] = None)(
+    implicit
+    system: ActorSystem) = {
+    Http().cachedHostConnectionPoolHttps(host, port, settings = proxySettings(proxy))
+  }
+
+  def http(
+    host: String,
+    port: Int = 80,
+    proxy: Option[Boolean] = None)(
+    implicit
+    system: ActorSystem) = {
+    Http().cachedHostConnectionPool(host, port, settings = proxySettings(proxy))
+  }
+
+  private[http] def proxySettings(proxy: Option[Boolean] = None) = {
+    proxy match {
+      case Some(true) ⇒
+        val httpsProxy = ClientTransport.httpsProxy(
+          InetSocketAddress.createUnresolved("127.0.0.1", 1087))
+        ConnectionPoolSettings(system).withTransport(httpsProxy)
+      case _ ⇒ ConnectionPoolSettings(system)
+    }
+  }
+
+  def get[T](uri: String)(implicit fallback: HttpResponse ⇒ Future[T]): Future[T] = {
+    val fallbackFuture = (r: Future[HttpResponse]) ⇒ r.flatMap(fallback)
+    (dispatcher andThen fallbackFuture) (Get(uri))
+  }
+
+  implicit class ResponseTo(response: HttpResponse) extends Unmarshal[HttpResponse](response) {}
 
 }

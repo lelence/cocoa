@@ -7,7 +7,9 @@ object Dependencies {
 
   lazy val testDependency = Seq(
     "org.scalatest" %% "scalatest" % "3.0.5",
-    "com.typesafe.akka" %% "akka-testkit" % akkaVersion
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion,
+    "org.scalamock" %% "scalamock" % "4.1.0"
   ) map (_ % Test)
 
   lazy val commonDependency = Seq(

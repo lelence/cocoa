@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest.socketio
+package com.maogogo.cocoa.rest.socketio_bak
 
 import akka.actor.{ ActorRef, ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider, Props }
 import com.corundumstudio.socketio.Configuration
@@ -66,8 +66,6 @@ class SocketIOSystemExtensionImpl(router: ActorRef) extends Extension {
       ProviderEventClass(i, cls, pms)
     }
 
-    println(providers)
-
     SocketIOServer(injector, copySettings, providers, server, router)
   }
 
@@ -81,7 +79,7 @@ class SocketIOSystemExtensionImpl(router: ActorRef) extends Extension {
     _config
   }
 
-  private[socketio] def packingProviderEventMethod(symbol: MethodSymbol): ProviderEventMethod = {
+  private[socketio_bak] def packingProviderEventMethod(symbol: MethodSymbol): ProviderEventMethod = {
 
     val e = annotation[event](symbol) {
       case Apply(_, Literal(Constant(name: String)) ::

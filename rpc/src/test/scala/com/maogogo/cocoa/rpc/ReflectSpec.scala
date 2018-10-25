@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest.socketio
+package com.maogogo.cocoa.rpc
 
-import org.slf4j.LoggerFactory
+import akka.actor.Actor
+import akka.testkit.TestProbe
+import org.scalatest.WordSpec
 
-class ConnectionListener extends IOListener {
+class ReflectSpec extends RpcSpec {
 
-  lazy val logger = LoggerFactory.getLogger(getClass)
+  "test1" in {
 
-  override def onConnect(client: IOClient): Unit = {
-    logger.info(s"SocketIO: remote ${client.getRemoteAddress.toString} has connected")
-  }
-}
+    //    def aa[T: Manifest](implicit m: Manifest[T]): Unit = {
+    //
+    //      println(m.runtimeClass)
+    //    }
 
-class DisconnectionListener extends com.corundumstudio.socketio.listener.DisconnectListener {
+    // println(aa[Test])
 
-  lazy val logger = LoggerFactory.getLogger(getClass)
-
-  override def onDisconnect(client: IOClient): Unit = {
-    logger.info(s"SocketIO: remote ${client.getRemoteAddress.toString} has disconnected")
   }
 
 }
+
