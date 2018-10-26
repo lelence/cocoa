@@ -24,26 +24,22 @@ import scala.reflect.runtime.universe._
 
 package object inject {
 
-  def props[T <: Actor : Manifest](ps: Any*)(
+  def props[T <: Actor: Manifest](ps: Any*)(
     implicit
-    m: Manifest[T]
-  ): Props = Props(classOf[T], ps: _*)
+    m: Manifest[T]): Props = Props(m.runtimeClass, ps: _*)
 
-  def actorRef[T <: Actor : Manifest](named: String, ps: Any*)(
+  def actorRef[T <: Actor: Manifest](named: String, ps: Any*)(
     implicit
-    system: ActorSystem,
-    m: Manifest[T]): ActorRef =
+    system: ActorSystem): ActorRef =
     system.actorOf(props[T](ps: _*), named)
 
-  def clusterSingleton[T <: Actor : Manifest](named: String, ps: Any*)(
+  def clusterSingleton[T <: Actor: Manifest](named: String, ps: Any*)(
     implicit
-    system: ActorSystem,
-    m: Manifest[T]): ActorRef = clusterSingleton(named, None, ps: _*)
+    system: ActorSystem): ActorRef = clusterSingleton(named, None, ps: _*)
 
-  def clusterSingleton[T <: Actor : Manifest](named: String, role: Option[String], ps: Any*)(
+  def clusterSingleton[T <: Actor: Manifest](named: String, role: Option[String], ps: Any*)(
     implicit
-    system: ActorSystem,
-    m: Manifest[T]): ActorRef = {
+    system: ActorSystem): ActorRef = {
     system.actorOf(
       ClusterSingletonManager.props(
         singletonProps = props[T](ps),
@@ -51,7 +47,6 @@ package object inject {
         settings = ClusterSingletonManagerSettings(system).withRole(role)),
       name = named)
   }
-
 
   def clusterProxy(path: String, named: String, role: Option[String] = None)(
     implicit
@@ -65,11 +60,11 @@ package object inject {
 
   implicit class PropsExtension(props: Props)(implicit system: ActorSystem) {
 
-    def registerActor[T <: Actor : Manifest](named: String): ActorRef = system.actorOf(Props[T], named)
+    def registerActor[T <: Actor: Manifest](named: String): ActorRef = system.actorOf(Props[T], named)
 
     def register(named: String): ActorRef = system.actorOf(props, named)
 
-    def registerActor2Cluster[T <: Actor : Manifest](named: String): ActorRef = {
+    def registerActor2Cluster[T <: Actor: Manifest](named: String): ActorRef = {
       val actorRef = registerActor[T](named)
       ClusterClientReceptionist(system).registerService(actorRef)
       actorRef

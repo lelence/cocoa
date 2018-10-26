@@ -24,13 +24,6 @@ class ReflectSpec extends RpcSpec {
 
   "test1" in {
 
-    //    def aa[T: Manifest](implicit m: Manifest[T]): Unit = {
-    //
-    //      println(m.runtimeClass)
-    //    }
-
-    // println(aa[Test])
-
   }
 
 }

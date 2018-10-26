@@ -75,8 +75,8 @@ class AuthHeaderSpec extends RestSpec {
 
     Get("/secured") ~> addCredentials(validCredentials) ~> // adds Authorization header
       route ~> check {
-        responseAs[String] shouldEqual "The user is 'John'"
-      }
+      responseAs[String] shouldEqual "The user is 'John'"
+    }
 
   }
 
@@ -85,10 +85,10 @@ class AuthHeaderSpec extends RestSpec {
     Get("/secured") ~>
       addCredentials(invalidCredentials) ~> // adds Authorization header
       route ~> check {
-        status shouldEqual StatusCodes.Unauthorized
-        responseAs[String] shouldEqual "The supplied authentication is invalid"
-        header[`WWW-Authenticate`].get.challenges.head shouldEqual HttpChallenge("Basic", Some("secure site"), Map("charset" → "UTF-8"))
-      }
+      status shouldEqual StatusCodes.Unauthorized
+      responseAs[String] shouldEqual "The supplied authentication is invalid"
+      header[`WWW-Authenticate`].get.challenges.head shouldEqual HttpChallenge("Basic", Some("secure site"), Map("charset" → "UTF-8"))
+    }
   }
 
 }

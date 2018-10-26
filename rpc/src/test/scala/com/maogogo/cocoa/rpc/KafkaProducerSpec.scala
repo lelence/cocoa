@@ -17,27 +17,25 @@
 package com.maogogo.cocoa.rpc
 
 import akka.Done
-import akka.kafka.ProducerSettings
+import akka.kafka.ProducerMessage.MultiResultPart
+import akka.kafka.{ ProducerMessage, ProducerSettings }
 import akka.kafka.scaladsl.Producer
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{ Sink, Source }
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import org.scalatest._
+import scala.concurrent.duration._
 
-import scala.concurrent.Future
+import scala.concurrent.{ Await, Future }
 
 class KafkaProducerSpec extends RpcSpec {
 
-  "emptySeq" in {
-    assert(Set.empty.size == 0)
-  }
+  val config = system.settings.config.getConfig("akka.kafka.producer")
+  val producerSettings =
+    ProducerSettings(config, new StringSerializer, new StringSerializer)
+      .withBootstrapServers("localhost:9092")
 
-  "sinkTest" in {
-
-    val config = system.settings.config.getConfig("akka.kafka.producer")
-    val producerSettings =
-      ProducerSettings(config, new StringSerializer, new StringSerializer)
-        .withBootstrapServers("localhost:9092")
+  "test0" in {
 
     val done: Future[Done] =
       Source(1 to 100)
@@ -50,6 +48,37 @@ class KafkaProducerSpec extends RpcSpec {
       case scala.util.Failure(exception) ⇒ exception.printStackTrace()
     }
 
+  }
+
+  "test1" in {
+    val done = Source(1 to 10)
+      .map { number =>
+        val partition = 0
+        val value = number.toString
+        ProducerMessage.Message(
+          new ProducerRecord("topic1", partition, "key" + value, value),
+          number)
+      }
+      .via(Producer.flexiFlow(producerSettings))
+      .map {
+        case ProducerMessage.Result(metadata, message) =>
+          val record = message.record
+          s"${metadata.topic}/${metadata.partition} ${metadata.offset}: ${record.value}"
+
+        case ProducerMessage.MultiResult(parts, passThrough) =>
+          parts
+            .map {
+              case MultiResultPart(metadata, record) =>
+                s"${metadata.topic}/${metadata.partition} ${metadata.offset}: ${record.value}"
+            }
+            .mkString(", ")
+
+        case ProducerMessage.PassThroughResult(passThrough) =>
+          s"passed through"
+      }
+      .runWith(Sink.foreach(println(_)))
+
+    Await.result(done, 10 seconds)
   }
 
 }
