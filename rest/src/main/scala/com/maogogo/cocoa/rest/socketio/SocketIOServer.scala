@@ -27,10 +27,6 @@ import org.json4s.jackson.JsonMethods
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-object SocketIOServer {
-
-}
-
 class SocketIOServer(eventMessages: Seq[IOMessage[_]], port: Int, pool: Int = 10)(
   implicit
   system: ActorSystem) extends LazyLogging {

@@ -18,12 +18,19 @@ object Dependencies {
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "ch.qos.logback" % "logback-access" % logbackVersion,
 
+    // "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
+
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "com.google.inject" % "guice" % "4.2.0",
     "net.codingwell" %% "scala-guice" % "4.2.1",
     "com.github.scopt" %% "scopt" % "3.7.0",
     "com.thesamet.scalapb" %% "scalapb-json4s" % "0.7.1",
-    "org.json4s" %% "json4s-native" % "3.6.1",
+    "org.json4s" %% "json4s-native" % "3.6.2",
+    "org.json4s" %% "json4s-jackson" % "3.6.2",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.7",
+    "org.clapper" %% "classutil" % "1.4.0",
+//    "io.github.shogowada" %% "scala-json-rpc" % "0.9.3",
+//    "io.github.shogowada" %% "scala-json-rpc-upickle-json-serializer" % "0.9.3",
     "org.reflections" % "reflections" % "0.9.11"
 
   )

@@ -10,7 +10,9 @@
 </head>
 <body>
 
-    <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+  <input type="button" value="submit" id="bb">
+
+    <!-- <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
       <h5 class="my-0 mr-md-auto font-weight-normal">Company name</h5>
       <nav class="my-2 my-md-0 mr-md-3">
         <a class="p-2 text-dark" href="#">Features</a>
@@ -112,37 +114,37 @@
           </div>
         </div>
       </footer>
-    </div>
+    </div> -->
 
 <script type="text/javascript" src="build.min.js" charset="utf-8"></script>
 </body>
 <script type="text/javascript">
-    // var socket = io('http://localhost:8585', {
-    //     query: {token: 'Tokens'}
-    // });
+    var socket = io('http://localhost:9077', {
+        query: {token: 'Tokens'}
+    });
 
-    // $("#bb").click(function () {
-    //     var json1 = {method: 'haha1', params: {username: "Toan", password: "hahahah"}}
-    //     var json2 = {method: 'haha2', params: {username: "Toan", password: "hahahah"}}
+    $("#bb").click(function () {
+        var json2 = {id:67, jsonrpc:"2.0", method: 'getBalance', params: [{owner: "Toan", delegateAddress: "hahahah"}]}
 
-    //     // socket.emit('', json1, function (data) {
-    //     //     console.log("aaaaaaaaaa")
-    //     //     console.log(data)
-    //     // });
+        socket.emit('', json2, function (data) {
+            console.log("aaaaaaaaaa")
+            console.log(data)
+        });
 
     //     socket.emit('', json2, function (data) {
     //         console.log("aaaaaaaaaa")
     //         console.log(data)
     //     });
-    // })
+    });
 
     // socket.on("hahaa", function(data) {
     //     console.log(data)
     // })
 
-    // socket.on("hahab", function(data) {
-    //     console.log(data)
-    // })
+    socket.on("balance", function(data) {
+      console.log(new Date())
+      console.log(data)
+    })
 
 
 </script>
