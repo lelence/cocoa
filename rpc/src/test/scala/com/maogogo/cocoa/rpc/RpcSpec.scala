@@ -16,7 +16,7 @@
 
 package com.maogogo.cocoa.rpc
 
-import akka.actor.ActorSystem
+import akka.actor.{ Actor, ActorSystem, Props }
 import akka.stream.ActorMaterializer
 import akka.testkit.{ ImplicitSender, TestKit }
 import akka.util.Timeout
@@ -32,10 +32,18 @@ abstract class RpcSpec extends TestKit(ActorSystem("MySpec", ConfigFactory.load(
 
   implicit val ex = system.dispatcher
 
-  implicit val timeout = Timeout(3 seconds)
+  implicit val timeout = Timeout(10 seconds)
 
   override def afterAll: Unit = {
     TestKit.shutdownActorSystem(system)
   }
+
+  // def actorRef[T <: Actor: Manifest] = system.actorOf(Props[T])
+
+  //  import scala.reflect.ClassTag
+  //  import scala.reflect._
+
+  def actorRef[T <: Actor : Manifest](ps: Any*)(implicit m: Manifest[T]) =
+    system.actorOf(Props(m.runtimeClass, ps: _*))
 
 }

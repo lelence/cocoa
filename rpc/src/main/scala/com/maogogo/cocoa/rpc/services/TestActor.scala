@@ -16,12 +16,35 @@
 
 package com.maogogo.cocoa.rpc.services
 
-import akka.actor.Actor
+import akka.actor.SupervisorStrategy._
+import akka.actor.{ Actor, OneForOneStrategy }
+import com.maogogo.cocoa.rpc.TestException
+
+import scala.concurrent.duration._
 
 class TestActor extends Actor {
+
+  //  override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute, false) {
+  //    case _: ArithmeticException ⇒ Resume
+  //    case _: TestException ⇒ Restart
+  //    case _: IllegalArgumentException ⇒ Stop
+  //    case _: Exception ⇒ Escalate
+  //  }
+  //
+  //  override def preStart(): Unit = {
+  //    println("h====>>>")
+  //  }
+  //
+  //  override def receive: Receive = akka.event.LoggingReceive {
+  //    case s: String if s != "restart" ⇒
+  //      println("====>>>>>>>>>>>>>>>>hello : " + s)
+  //      sender() ! "hello : " + s
+  //
+  //    case s: String if s == "restart" ⇒
+  //      throw new TestException("restart")
+  //  }
   override def receive: Receive = {
     case s: String ⇒
-      println("====>>>>>>>>>>>>>>>>hello : " + s)
-      sender() ! "hello : " + s
+      println("ssssss===>>" + s)
   }
 }

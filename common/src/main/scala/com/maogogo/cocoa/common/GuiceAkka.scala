@@ -17,26 +17,30 @@
 package com.maogogo.cocoa.common
 
 import com.google.inject._
-import com.maogogo.cocoa.common.modules.SysAndConfigModule
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.maogogo.cocoa.common.modules.{ ClusterSystemModule, SysAndConfigModule }
+import com.typesafe.config.Config
 
 final object GuiceAkka {
 
-  def apply(): Injector = apply(ConfigFactory.load())
+  def apply(): GuiceAkka = new GuiceAkka(Seq.empty)
 
-  def apply(config: Config): Injector = apply(config, None, Seq.empty: _*)
+  def apply(m: Module*): GuiceAkka = new GuiceAkka(m)
 
-  def apply(m: Module*): Injector = apply(ConfigFactory.load(), None, m: _*)
+  def apply(c: Config): GuiceAkka = new GuiceAkka(Seq.empty).config(c)
 
-  def apply(c: Config, m: Module*): Injector = apply(c, None, m: _*)
+  def apply(isCluster: Boolean): GuiceAkka = new GuiceAkka(Seq.empty).cluster()
 
-  def apply(c: Config, cluster: Option[Boolean], m: Module*): Injector =
-    Guice.createInjector((m :+ SysAndConfigModule(Some(c), cluster)): _*)
+}
 
-  def withCluster(config: Config): Injector = withCluster(config, Seq.empty: _*)
+private[common] class GuiceAkka(ms: Seq[Module], config: Option[Config] = None, isCluster: Boolean = false) {
 
-  def withCluster(m: Module*): Injector = withCluster(ConfigFactory.load(), m: _*)
+  def injector(): Injector =
+    Guice.createInjector((ms :+ SysAndConfigModule(config)): _*)
 
-  def withCluster(config: Config, m: Module*): Injector = apply(config, Some(true), m: _*)
+  def config(c: Config): GuiceAkka = new GuiceAkka(ms, Some(c), isCluster)
+
+  def modules(m: Module*): GuiceAkka = new GuiceAkka(ms ++ m, config, isCluster)
+
+  def cluster(): GuiceAkka = new GuiceAkka(ms :+ ClusterSystemModule(), config, true)
 
 }

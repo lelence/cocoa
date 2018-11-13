@@ -18,11 +18,12 @@ package com.maogogo.cocoa.rpc.services
 
 import akka.actor.{ Actor, ActorRef, ActorSystem }
 import com.google.inject.name.Named
+import com.maogogo.cocoa.common.inject.ActorInstance
 import javax.inject.Inject
 
 import scala.concurrent.Future
 
-class HelloActor @Inject() (@Named("dudu") testActor: ActorRef) extends Actor {
+class HelloActor @Inject() (testActor: ActorInstance[TestActor]) extends Actor {
 
   //    val testActor = injector[Ac]
 
@@ -32,6 +33,7 @@ class HelloActor @Inject() (@Named("dudu") testActor: ActorRef) extends Actor {
   override def receive: Receive = {
     case s: String ⇒
       println("ss ==>>>" + s)
-      sender() ! Future.successful("Hello: " + s)
+      testActor.ref ! "dudududududu"
+    // sender() ! Future.successful("Hello: " + s)
   }
 }

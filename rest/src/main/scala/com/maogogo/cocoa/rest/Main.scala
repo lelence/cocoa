@@ -37,9 +37,13 @@ object Main extends Application {
            """.stripMargin)
       .withFallback(ConfigFactory.load())
 
-    val injector = GuiceAkka(config, ServicesModule)
+    // val injector = GuiceAkka(true).injector()
 
-    injector.instance[HttpServer]
+    //    GuiceAkka().cluster()
+
+    //    val injector = GuiceAkka(config, ServicesModule)
+    //
+    //    injector.instance[HttpServer]
 
   }
 

@@ -18,7 +18,7 @@ package com.maogogo.cocoa.rest.socketio
 
 import org.slf4j.LoggerFactory
 
-class ConnectionListener extends com.corundumstudio.socketio.listener.ConnectListener {
+class ConnectionListener extends IOListener {
 
   lazy val logger = LoggerFactory.getLogger(getClass)
 
@@ -32,6 +32,8 @@ class DisconnectionListener extends com.corundumstudio.socketio.listener.Disconn
   lazy val logger = LoggerFactory.getLogger(getClass)
 
   override def onDisconnect(client: IOClient): Unit = {
+    SocketIOClient.remove(client)
     logger.info(s"SocketIO: remote ${client.getRemoteAddress.toString} has disconnected")
   }
+
 }

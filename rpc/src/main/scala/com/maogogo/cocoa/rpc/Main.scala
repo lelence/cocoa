@@ -16,8 +16,11 @@
 
 package com.maogogo.cocoa.rpc
 
+import akka.actor.{ ActorRef, ActorSystem, PoisonPill, Props }
+import com.google.inject.name.Names
 import com.maogogo.cocoa.common.modules.SysAndConfigModule
 import com.maogogo.cocoa.common.{ Application, CommandSettings, GuiceAkka }
+import com.maogogo.cocoa.rpc.services.{ HelloActor, Worker }
 import com.typesafe.config.ConfigFactory
 
 object Main extends Application {
@@ -35,7 +38,44 @@ object Main extends Application {
         """.stripMargin)
       .withFallback(ConfigFactory.load())
 
-    GuiceAkka.withCluster(config, ServicesModule)
+    val injector = GuiceAkka().injector()
+
+    //    val injector = GuiceAkka(config, ServicesModule)
+    //
+    import net.codingwell.scalaguice.InjectorExtensions._
+
+    val ww = injector.instance[Worker]
+
+    ww.test
+
+    ww.test
+
+    //    val hello = injector.instance[HelloActor]
+    //
+    //    println(hello)
+
+    // hello. ! "hahah"
+
+    //
+    //    val testActor = injector.instance[ActorRef](Names.named("dudu"))
+    //
+    //    testActor ! "hahah"
+    //
+    //    // testActor ! PoisonPill
+    //
+    //    // val system = injector.instance[ActorSystem]
+    //
+    //    //    testActor.
+    //
+    //    //    system.actorOf(testActor, "dudu")
+    //
+    //    testActor ! "hahah"
+
+    // testActor ! PoisonPill
+
+    //    testActor ! "restart"
+    //
+    //    testActor ! "DUDUD"
 
   }
 

@@ -16,7 +16,12 @@
 
 package com.maogogo.cocoa.rest
 
+import java.net.InetSocketAddress
+
+import akka.actor.ActorSystem
+import akka.http.scaladsl.ClientTransport
 import akka.http.scaladsl.model.{ HttpMethods, HttpRequest, Uri }
+import akka.http.scaladsl.settings.ClientConnectionSettings
 
 package object http {
 

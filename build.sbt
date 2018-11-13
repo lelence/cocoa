@@ -28,6 +28,15 @@ lazy val rpc = (project in file("rpc"))
     libraryDependencies ++= testDependency
   )
 
+lazy val jsonrpc = (project in file("jsonrpc"))
+  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(JavaAppPackaging)
+  .settings(
+    basicSettings,
+
+    libraryDependencies ++= commonDependency ++ testDependency
+  )
+
 lazy val proto = (project in file("proto"))
   .settings(
     libraryDependencies ++= scalapbDependency,

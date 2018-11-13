@@ -25,7 +25,7 @@ class ReidsByteStringAccessor(redis: RedisCommands) extends Accessor[String, Byt
 
   override def get(ks: String): Future[Option[ByteString]] = redis.get(ks)
 
-  override def set(ks: String, vs: ByteString, ttl: Option[Long]): Future[Boolean] = redis.set(ks, vs, exSeconds = ttl)
+  override def set(ks: String, vs: ByteString, ttl: Option[Long] = None): Future[Boolean] = redis.set(ks, vs, exSeconds = ttl)
 
   override def push(ks: String, vss: Seq[ByteString]): Future[Long] = redis.lpush(ks, vss: _*)
 

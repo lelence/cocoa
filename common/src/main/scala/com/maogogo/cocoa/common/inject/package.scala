@@ -17,50 +17,82 @@
 package com.maogogo.cocoa.common
 
 import akka.actor.{ Actor, ActorRef, ActorSystem, PoisonPill, Props }
-import akka.cluster.client.ClusterClientReceptionist
+import akka.cluster.Cluster
+import akka.cluster.routing.{ ClusterRouterGroup, ClusterRouterGroupSettings }
 import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings }
+import akka.routing.RoundRobinGroup
 
 import scala.reflect.runtime.universe._
 
 package object inject {
 
-  def clusterProxy(path: String, named: String, role: Option[String] = None)(
-    implicit
-    system: ActorSystem): ActorRef = {
-    system.actorOf(
-      ClusterSingletonProxy.props(
-        singletonManagerPath = path,
-        settings = ClusterSingletonProxySettings(system).withRole(role)),
-      name = named)
-  }
+  //  def props[T <: Actor : Manifest]: Props = propsWith()((_) ⇒ Unit)
+  //
+  //  def props[T <: Actor : Manifest](ps: Any*): Props = propsWith(ps: _*)((_) ⇒ Unit)
+  //
+  //  def propsWith[T <: Actor : Manifest](ps: Any*)(fallback: Props ⇒ Unit)(
+  //    implicit
+  //    m: Manifest[T]): Props = {
+  //    val props = Props(m.runtimeClass, ps: _*)
+  //    fallback(props)
+  //    props
+  //  }
+  //
+  //  def propsTo[T <: Actor : Manifest, R](ps: Any*)(fallback: Props ⇒ R)(
+  //    implicit
+  //    m: Manifest[T]): R = {
+  //    fallback(Props(m.runtimeClass, ps: _*))
+  //  }
 
-  implicit class PropsExtension(props: Props)(implicit system: ActorSystem) {
+  //  def propsTo[T <: Actor : Manifest](named: String)(ps: Any*)(
+  //    implicit
+  //    system: ActorSystem,
+  //    m: Manifest[T]
+  //  ): ActorRef = {
+  //    propsTo(ps: _*) {
+  //      system.actorOf(_, named)
+  //    }
+  //  }
 
-    def registerActor[T <: Actor: Manifest](named: String): ActorRef = system.actorOf(Props[T], named)
+  //  def propsTo[T <: Actor : Manifest](named: String, role: Option[String] = None)(ps: Any*)(
+  //    implicit
+  //    cluster: Cluster,
+  //    m: Manifest[T]
+  //  ): ActorRef = {
+  //
+  //    propsTo(ps: _*) { props ⇒
+  //      cluster.system.actorOf(
+  //        ClusterSingletonManager.props(
+  //          singletonProps = props,
+  //          terminationMessage = PoisonPill,
+  //          settings = ClusterSingletonManagerSettings(cluster.system).withRole(role)),
+  //        name = named)
+  //    }
+  //
+  //  }
 
-    def register(named: String): ActorRef = system.actorOf(props, named)
-
-    def registerActor2Cluster[T <: Actor: Manifest](named: String): ActorRef = {
-      val actorRef = registerActor[T](named)
-      ClusterClientReceptionist(system).registerService(actorRef)
-      actorRef
-    }
-
-    def registerCluster(named: String): ActorRef = {
-      val actorRef = register(named)
-      ClusterClientReceptionist(system).registerService(actorRef)
-      actorRef
-    }
-
-    def registerSingleton(named: String, role: Option[String] = None): ActorRef = {
-      system.actorOf(
-        ClusterSingletonManager.props(
-          singletonProps = props,
-          terminationMessage = PoisonPill,
-          settings = ClusterSingletonManagerSettings(system).withRole(role)),
-        name = named)
-    }
-
-  }
+  //  implicit class ActorSystemPropsExtension(props: Props)(implicit system: ActorSystem) {
+  //    def to(named: String): ActorRef = system.actorOf(props, named)
+  //  }
+  //
+  //  implicit class ClusterPropsExtension(props: Props)(implicit cluster: Cluster) {
+  //
+  //    private lazy val system = cluster.system
+  //
+  //    def to(named: String, role: Option[String] = None): Unit = {
+  //
+  //      // TODO(Toan) 这里还需要在测试一下
+  //      if (role.isEmpty || (role.isDefined && cluster.selfRoles.contains(role.get))) {
+  //        system.actorOf(
+  //          ClusterSingletonManager.props(
+  //            singletonProps = props,
+  //            terminationMessage = PoisonPill,
+  //            settings = ClusterSingletonManagerSettings(system).withRole(role)),
+  //          name = named)
+  //      }
+  //
+  //    }
+  //
+  //  }
 
 }
