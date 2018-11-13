@@ -1,10 +1,11 @@
-var gulp = require('gulp'),
-    concat = require('gulp-concat'),
-    uglify = require('gulp-uglify'),
-    cssmin = require('gulp-clean-css'),
-    rename = require('gulp-rename'),
-    del = require('del'),
-    webserver = require('gulp-webserver');
+var gulp = require('gulp');
+var concat = require('gulp-concat');
+var uglify = require('gulp-uglify');
+var cssmin = require('gulp-clean-css');
+var rename = require('gulp-rename');
+var del = require('del');
+var webserver = require('gulp-webserver');
+var mocha = require('gulp-mocha');
 
 var paths = {
 
@@ -74,5 +75,12 @@ gulp.task('webserver', ['clean', 'html', 'js', 'css', 'css_copy', 'watch'], func
         }));
 });
 
-
 gulp.task('default', ['webserver']);
+
+
+gulp.task('test1', function () {
+  return gulp.src(['test/*.js'], { read: false }) // 加载需要进行测试的所有文件
+    .pipe(mocha()); // 用 mocha 模块进行测试
+});
+
+

@@ -37,7 +37,9 @@ trait ServicesModule extends AbstractModule with ScalaModule {
   @Singleton
   @Named("uhaha")
   def aa(implicit system: ActorSystem): ActorRef = {
-    clusterProxy("/user/haha", "uhaha")
+    //
+    // clusterProxy("/user/haha", "uhaha")
+    ???
   }
 
 }

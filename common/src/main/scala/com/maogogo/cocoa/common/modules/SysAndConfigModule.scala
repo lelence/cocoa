@@ -30,7 +30,7 @@ private[common] object SysAndConfigModule extends LazyLogging {
 
   lazy val systemName = "MyClusterSystem"
 
-  def apply(config: Option[Config] = None, withCluster: Option[Boolean] = None): AbstractModule with ScalaModule =
+  def apply(config: Option[Config] = None): AbstractModule with ScalaModule =
     new AbstractModule with ScalaModule {
       override def configure(): Unit = {
 
@@ -38,19 +38,28 @@ private[common] object SysAndConfigModule extends LazyLogging {
         bind[ActorSystem].toInstance(system)
         bind[Config].toInstance(system.settings.config)
 
-        withCluster match {
-          case Some(true) ⇒
-            bind[Cluster].toInstance(Cluster(system))
-            bind[SimpleClusterListener]
-          case _ ⇒
-        }
-
         bind[ActorMaterializer].toProvider[ActorMaterializerProvider].asEagerSingleton()
       }
     }
 
   class ActorMaterializerProvider @Inject() (system: ActorSystem) extends Provider[ActorMaterializer] {
     override def get(): ActorMaterializer = ActorMaterializer()(system)
+  }
+
+}
+
+object ClusterSystemModule extends LazyLogging {
+
+  def apply(): AbstractModule with ScalaModule =
+    new AbstractModule with ScalaModule {
+      override def configure(): Unit = {
+        bind[Cluster].toProvider[ClusterProvider].asEagerSingleton()
+        bind[SimpleClusterListener]
+      }
+    }
+
+  class ClusterProvider @Inject() (system: ActorSystem) extends Provider[Cluster] {
+    override def get(): Cluster = Cluster(system)
   }
 
 }

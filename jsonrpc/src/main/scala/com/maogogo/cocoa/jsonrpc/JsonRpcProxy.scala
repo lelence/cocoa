@@ -25,7 +25,9 @@ private[jsonrpc] object JsonRpcProxy {
     val responseAny = paramTpes match {
       case Seq() ⇒ methodMirror()
       case Seq(head) ⇒
-        parse(request.params) match {
+
+        // params 已经 经过转换了
+        request.params match {
           case arr: JArray ⇒
 
             if (head <:< typeOf[Iterable[_]]) {
@@ -33,16 +35,17 @@ private[jsonrpc] object JsonRpcProxy {
             } else {
               arr.children match {
                 case (a0: JValue) :: Nil ⇒ methodMirror(convertString2Parameter(a0, head))
-                case _ ⇒ throw new JsonRpcException(-32700, s"params not match Array", id = Some(request.id))
+                case _ ⇒ throw JsonRpcInternalException(s"params not match Array", id = Some(request.id))
               }
             }
 
           case obj: JObject ⇒ methodMirror(convertString2Parameter(obj, head))
-          case _ ⇒ throw new JsonRpcException(-32700, s"params not match", id = Some(request.id))
+          case _ ⇒
+            throw JsonRpcInternalException(s"params not match", id = Some(request.id))
         }
-      case _ ⇒ throw new JsonRpcException(-32000, s"method:${methodName} has multiple parameter", id = Some(request.id))
-    }
 
+      case _ ⇒ throw JsonRpcInternalException(s"method:${methodName} has multiple parameter", id = Some(request.id))
+    }
 
     (responseAny match {
       case f: Future[_] ⇒ f.map(resp ⇒ JsonRpcResponse(id = Some(request.id), result = resp))

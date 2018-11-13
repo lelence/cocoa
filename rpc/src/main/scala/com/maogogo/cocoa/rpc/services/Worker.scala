@@ -16,24 +16,18 @@
 
 package com.maogogo.cocoa.rpc.services
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
-import com.google.inject.name.Named
+import com.google.inject.Inject
 import com.maogogo.cocoa.common.inject.ActorInstance
-import javax.inject.Inject
 
-import scala.concurrent.Future
+class Worker @Inject() (actor: ActorInstance[HelloActor]) {
 
-class HelloActor @Inject() (testActor: ActorInstance[TestActor]) extends Actor {
+  def test = {
+    println("=" * 50)
+    println(actor.ref.path)
 
-  //    val testActor = injector[Ac]
+    // actor.ref ! PoisonPill
 
-  // val testActor = injectorRef("dudu")
-  // injectorRef("dudu")
-
-  override def receive: Receive = {
-    case s: String ⇒
-      println("ss ==>>>" + s)
-      testActor.ref ! "dudududududu"
-    // sender() ! Future.successful("Hello: " + s)
+    actor.ref ! "hahaha"
   }
+
 }

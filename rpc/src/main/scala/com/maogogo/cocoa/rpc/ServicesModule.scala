@@ -29,22 +29,21 @@ trait ServicesModule extends AbstractModule with ScalaModule {
 
   }
 
-  @Provides
-  @Singleton
-  @Named("haha")
-  def aa(implicit system: ActorSystem, @Named("dudu") testActor: ActorRef): ActorRef = {
+  //  @Provides
+  //  @Singleton
+  //  @Named("haha")
+  //  def aa(implicit system: ActorSystem, @Named("dudu") testActor: ActorRef): ActorRef = {
+  //
+  //    actorRef[HelloActor]("dudu", testActor)
+  //    // Props(classOf[HelloActor], testActor).registerSingleton("dudu")
+  //  }
 
-    actorRef[HelloActor]("dudu", testActor)
-    // Props(classOf[HelloActor], testActor).registerSingleton("dudu")
-  }
-
-  @Provides
-  @Singleton
-  @Named("dudu")
-  def bb(implicit system: ActorSystem): ActorRef = {
-    // Props(classOf[TestActor]).register("dudu")
-    clusterSingleton[TestActor]("dudu")
-  }
+  //  @Provides
+  //  @Singleton
+  //  @Named("dudu")
+  //  def bb(implicit system: ActorSystem): Props = {
+  //    props[TestActor].to("dudu")// .to("dudu")
+  //  }
 
 }
 
