@@ -16,66 +16,89 @@
 
 package com.maogogo.cocoa.rpc
 
-import akka.actor.{ ActorRef, ActorSystem, PoisonPill, Props }
+import akka.actor.ActorRef
+import akka.cluster.Cluster
+import akka.util.Timeout
 import com.google.inject.name.Names
-import com.maogogo.cocoa.common.modules.SysAndConfigModule
+import com.maogogo.cocoa.common.actor.ActorRestartAction
 import com.maogogo.cocoa.common.{ Application, CommandSettings, GuiceAkka }
-import com.maogogo.cocoa.rpc.services.{ HelloActor, Worker }
+import com.maogogo.cocoa.rpc.node.NodeHttpServer
 import com.typesafe.config.ConfigFactory
 
+import scala.concurrent.duration._
+
 object Main extends Application {
+
+  implicit val timeout = Timeout(3 seconds)
 
   lazy val parser = (settings: CommandSettings) ⇒ {
 
     val seeds = settings.seeds.map(s ⇒ s""""${systemPrefix}${s.trim}"""").mkString(",")
 
+    val roles = settings.roles.mkString(", ")
+
+    val info =
+      s"""
+         |akka.remote.netty.tcp.port=${settings.port}
+         |akka.remote.netty.tcp.hostname="127.0.0.1"
+         |akka.cluster.seed-nodes=[${seeds}]
+         |akka.cluster.roles=[${roles}]
+        """.stripMargin
+
     val config = ConfigFactory
-      .parseString(
-        s"""
-           |akka.remote.netty.tcp.port=${settings.port}
-           |akka.remote.netty.tcp.hostname="127.0.0.1"
-           |akka.cluster.seed-nodes=[$seeds]
-        """.stripMargin)
+      .parseString(info)
       .withFallback(ConfigFactory.load())
 
-    val injector = GuiceAkka().injector()
+    val injector = GuiceAkka(true).config(config).modules(new ServicesModule).injector()
 
-    //    val injector = GuiceAkka(config, ServicesModule)
-    //
     import net.codingwell.scalaguice.InjectorExtensions._
 
-    val ww = injector.instance[Worker]
+    val dd = injector.instance[Map[String, Option[ActorRef]]](Names.named("cluster_actor_map"))
 
-    ww.test
+    println(s"""${"=" * 50}${info}\n${"=" * 50}""")
 
-    ww.test
+    dd.map { k ⇒
 
-    //    val hello = injector.instance[HelloActor]
-    //
-    //    println(hello)
+      println(k)
 
-    // hello. ! "hahah"
+    }
 
+    //    val cluster = injector.instance[Cluster]
     //
-    //    val testActor = injector.instance[ActorRef](Names.named("dudu"))
-    //
-    //    testActor ! "hahah"
-    //
-    //    // testActor ! PoisonPill
-    //
-    //    // val system = injector.instance[ActorSystem]
-    //
-    //    //    testActor.
-    //
-    //    //    system.actorOf(testActor, "dudu")
-    //
-    //    testActor ! "hahah"
+    //    injector.instance[NodeHttpServer]
 
-    // testActor ! PoisonPill
-
-    //    testActor ! "restart"
+    //    cluster.registerOnMemberUp {
     //
-    //    testActor ! "DUDUD"
+    //      Thread.sleep(5 * 1000)
+    //
+    //      val dd = cluster.system.actorSelection("/user/HelloActor/*")
+    //
+    //      println(dd.pathString)
+    //
+    //      // dd ! 1000
+    //
+    //      Thread.sleep(5 * 1000)
+    //
+    //      dd ! "hahhaha"
+    //
+    //      dd ! ActorRestartAction
+    //
+    //      // dd ! new Exception("restart exception")
+    //
+    //      dd ! "uuuuuhhhhh"
+    //    }
+
+    //    map.foreach {
+    //      case (k, ref) ⇒
+    //
+    //        Thread.sleep(2000)
+    //
+    //        println("kk =>>" + k + "####" + ref.path)
+    //
+    //        ref ? "ddddd"
+    //
+    //    }
+    // map.get("HelloActor").get ! 1000
 
   }
 

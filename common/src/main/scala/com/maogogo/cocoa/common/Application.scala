@@ -57,7 +57,7 @@ trait Application {
 
     }.parse(args, CommandSettings()) match {
       case Some(s) ⇒
-        parser(s); println(logo)
+        parser(s); println(logo);
       case _ ⇒
     }
   }
@@ -65,6 +65,6 @@ trait Application {
 }
 
 case class CommandSettings(
-  port: Int = 2552,
+  port: Int = 0,
   seeds: Seq[String] = Seq.empty,
   roles: Seq[String] = Seq.empty)

@@ -16,22 +16,20 @@
 
 package com.maogogo.cocoa.rest.endpoints
 
-import akka.actor.ActorRef
 import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpResponse, StatusCodes }
-import akka.http.scaladsl.server.{ ExceptionHandler, Route }
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.directives.Credentials
+import akka.http.scaladsl.server.{ ExceptionHandler, Route }
 import akka.pattern.AskTimeoutException
-import akka.pattern.ask
 import akka.util.Timeout
 import com.google.inject.Inject
-import com.google.inject.name.Named
 import com.maogogo.cocoa.rest.http.Json4sSupport
 import com.typesafe.scalalogging.LazyLogging
+import akka.pattern.ask
+import com.maogogo.cocoa.common.cluster.ProxyActor
 
 import scala.concurrent.duration._
 
-class RootEndpoint @Inject() (@Named("uhaha") proxy: ActorRef) extends Json4sSupport with LazyLogging {
+class RootEndpoint @Inject()(proxy: ProxyActor) extends Json4sSupport with LazyLogging {
 
   implicit val timeout = Timeout(3 seconds)
 
@@ -44,24 +42,28 @@ class RootEndpoint @Inject() (@Named("uhaha") proxy: ActorRef) extends Json4sSup
       complete(errorResponse(e.getMessage))
   }
 
-  private val myUserPassAuthenticator = (credentials: Credentials) ⇒ {
-    credentials match {
-      case p @ Credentials.Provided(id) if p.verify("p4ssw0rd") => Some(id)
-      case _ => None
-    }
-  }
+  //  private val myUserPassAuthenticator = (credentials: Credentials) ⇒ {
+  //    credentials match {
+  //      case p @ Credentials.Provided(id) if p.verify("p4ssw0rd") => Some(id)
+  //      case _ => None
+  //    }
+  //  }
 
   def apply(): Route = {
-    handleExceptions(exceptionHandler)(authenticateBasic("Basic", myUserPassAuthenticator) { userName ⇒
-      println("user name ====>>>" + userName)
+    // (authenticateBasic("Basic", myUserPassAuthenticator)
+    handleExceptions(exceptionHandler) {
       route
-    })
+    }
   }
 
   private def route: Route = {
     pathEndOrSingleSlash {
       get {
-        complete((proxy ? "haha").mapTo[String])
+        val dd = proxy.ref("HelloActor").get
+        //
+        val f = (dd ? "Toan").mapTo[String]
+
+        complete(f)
       }
     }
   }

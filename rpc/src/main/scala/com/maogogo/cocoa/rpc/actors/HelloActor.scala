@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.rpc.actors
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
-import com.google.inject.name.Named
-import com.maogogo.cocoa.common.inject.ActorInstance
-import javax.inject.Inject
+import akka.actor.SupervisorStrategy._
+import akka.actor.{ Actor, OneForOneStrategy }
+import com.maogogo.cocoa.common.actor.NodeActor
+import com.maogogo.cocoa.rpc._
 
-import scala.concurrent.Future
+class HelloActor extends NodeActor {
 
-class HelloActor @Inject() (testActor: ActorInstance[TestActor]) extends Actor {
-
-  //    val testActor = injector[Ac]
-
-  // val testActor = injectorRef("dudu")
-  // injectorRef("dudu")
-
-  override def receive: Receive = {
-    case s: String ⇒
-      println("ss ==>>>" + s)
-      testActor.ref ! "dudududududu"
-    // sender() ! Future.successful("Hello: " + s)
+  override def preStart(): Unit = {
+    println("===restart>>" + self.path)
   }
+
+  import com.github.nscala_time.time.Imports._
+
+  override def doReceive: Receive = {
+    case s: String ⇒
+      println("===>>>>" + self.path)
+      println(DateTime.now().toString + " ==>>" + s)
+  }
+
 }

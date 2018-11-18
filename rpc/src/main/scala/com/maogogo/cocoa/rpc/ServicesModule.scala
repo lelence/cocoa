@@ -16,35 +16,50 @@
 
 package com.maogogo.cocoa.rpc
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.actor.{ Actor, ActorRef, ActorSystem, PoisonPill, Props }
+import akka.cluster.Cluster
+import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings }
 import com.google.inject._
-import com.google.inject.name.Named
-import com.maogogo.cocoa.common.inject._
-import com.maogogo.cocoa.rpc.services.{ HelloActor, TestActor }
-import net.codingwell.scalaguice.ScalaModule
+import com.google.inject.name.{ Named, Names }
+import com.maogogo.cocoa.common.cluster.ClusterActorRefFactory
+import com.maogogo.cocoa.rpc.node.NodeHttpServer
+//import com.maogogo.cocoa.common.inject.{ ActorBuilder }
+import com.maogogo.cocoa.rpc.actors.HelloActor
+import net.codingwell.scalaguice.{ ScalaMapBinder, ScalaModule }
 
-trait ServicesModule extends AbstractModule with ScalaModule {
+class ServicesModule extends AbstractModule with ScalaModule {
 
   override def configure(): Unit = {
 
+    val factory = new ClusterActorRefFactory(binder)
+    factory.bindActor[HelloActor] //("HelloActorSS")
+
+    // bind[NodeHttpServer]
+
+    //    val mBinder = ScalaMapBinder.newMapBinder[String, ActorRef](binder, Names.named("uu"))
+    //    mBinder.addBinding("HelloActor").toProvider[ServicesModule.CI[HelloActor]]
+
   }
-
-  //  @Provides
-  //  @Singleton
-  //  @Named("haha")
-  //  def aa(implicit system: ActorSystem, @Named("dudu") testActor: ActorRef): ActorRef = {
-  //
-  //    actorRef[HelloActor]("dudu", testActor)
-  //    // Props(classOf[HelloActor], testActor).registerSingleton("dudu")
-  //  }
-
-  //  @Provides
-  //  @Singleton
-  //  @Named("dudu")
-  //  def bb(implicit system: ActorSystem): Props = {
-  //    props[TestActor].to("dudu")// .to("dudu")
-  //  }
 
 }
 
-object ServicesModule extends ServicesModule
+//object ServicesModule {
+//  class AI[T <: Actor] @Inject() (
+//    @Named("actor_builder") builder: ActorBuilder, provider: Provider[T], typeLiteral: TypeLiteral[T])(
+//    implicit
+//    system: ActorSystem) extends Provider[ActorRef] {
+//
+//    override def get(): ActorRef = builder(provider, typeLiteral.getRawType.getSimpleName)
+//  }
+//
+//  @Singleton
+//  class CI[T <: Actor] @Inject() (
+//    @Named("cluster_actor_builder") builder: ActorBuilder, provider: Provider[T], typeLiteral: TypeLiteral[T])(
+//    implicit
+//    cluster: Cluster) extends Provider[ActorRef] {
+//
+//    private implicit val system = cluster.system
+//
+//    override def get(): ActorRef = builder(provider, typeLiteral.getRawType.getSimpleName)
+//  }
+//}

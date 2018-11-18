@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rest.http
+package com.maogogo.cocoa.rpc.node
 
 import org.json4s.JsonAST.{ JNull, JObject, JString }
 import org.json4s.{ CustomSerializer, DefaultFormats }
@@ -29,7 +29,7 @@ trait Json4sSupport extends de.heikoseeberger.akkahttpjson4s.Json4sSupport {
 private class EmptyValueSerializer
   extends CustomSerializer[String](
     _ ⇒
-      ( {
+      ({
         case JNull ⇒ ""
         case JString(x) => x
         case JObject(x) ⇒

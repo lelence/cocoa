@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common.cluster
 
-import akka.persistence.PersistentActor
+import akka.actor.ActorRef
+import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
+import com.google.inject.name.Named
 
-class Worker extends PersistentActor {
+trait ProxyActor {
+  def ref(named: String): ProxyActorProvider
+}
 
-  def test = {
-    //    println("=" * 50)
-    //    println(testActor.ref.path)
-    //
-    //    // actor.ref ! PoisonPill
-    //
-    //    actor.ref ! "hahaha"
-  }
+class ProxyActorProvider @Inject() (
+  @Assisted named: String,
+  @Named("cluster_proxy_routees") proxyMap: Map[String, ActorRef]) {
 
-  override def receiveRecover: Receive = ???
+  def get: ActorRef = option get
 
-  override def receiveCommand: Receive = ???
+  def option: Option[ActorRef] = proxyMap.get(named)
 
-  override def persistenceId: String = ???
 }

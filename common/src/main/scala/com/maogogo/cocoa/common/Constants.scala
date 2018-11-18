@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common
 
-import akka.persistence.PersistentActor
+object Constants {
 
-class Worker extends PersistentActor {
+  /**
+   * named for cluster actor map
+   */
+  lazy val cluster_actor_map = "cluster_actor_map"
 
-  def test = {
-    //    println("=" * 50)
-    //    println(testActor.ref.path)
-    //
-    //    // actor.ref ! PoisonPill
-    //
-    //    actor.ref ! "hahaha"
-  }
+  /**
+   * named for cluster proxy routees
+   */
+  lazy val cluster_proxy_routees = "cluster_proxy_routees"
 
-  override def receiveRecover: Receive = ???
+  /**
+   * key for akka cluster routees
+   */
+  lazy val akka_cluster_routees = "akka.cluster.routees"
 
-  override def receiveCommand: Receive = ???
-
-  override def persistenceId: String = ???
 }
