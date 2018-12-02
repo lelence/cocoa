@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common.actor
 
-import akka.persistence.PersistentActor
+case object ActorRestartAction extends Exception("Restart")
 
-class Worker extends PersistentActor {
+case object ActorResumeAction extends Exception("Resume")
 
-  def test = {
-    //    println("=" * 50)
-    //    println(testActor.ref.path)
-    //
-    //    // actor.ref ! PoisonPill
-    //
-    //    actor.ref ! "hahaha"
-  }
+case object ActorStopAction extends Exception("Stop")
 
-  override def receiveRecover: Receive = ???
-
-  override def receiveCommand: Receive = ???
-
-  override def persistenceId: String = ???
-}
+case object ActorEscalateAction extends Exception("Escalate")

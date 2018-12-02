@@ -20,7 +20,7 @@ import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.stream.ActorMaterializer
 import com.google.inject.{ AbstractModule, Provider }
-import com.maogogo.cocoa.common.cluster.SimpleClusterListener
+import com.maogogo.cocoa.common.cluster.{ ClusterSingletonBuilder, ClusterSingletonBuilderImpl, SimpleClusterListener }
 import com.typesafe.config.{ Config, ConfigFactory }
 import com.typesafe.scalalogging.LazyLogging
 import javax.inject.Inject
@@ -38,11 +38,12 @@ private[common] object SysAndConfigModule extends LazyLogging {
         bind[ActorSystem].toInstance(system)
         bind[Config].toInstance(system.settings.config)
 
+        // bind[ActorBuilder].annotatedWithName("actor_builder").to[ActorBuilderImpl]
         bind[ActorMaterializer].toProvider[ActorMaterializerProvider].asEagerSingleton()
       }
     }
 
-  class ActorMaterializerProvider @Inject() (system: ActorSystem) extends Provider[ActorMaterializer] {
+  class ActorMaterializerProvider @Inject()(system: ActorSystem) extends Provider[ActorMaterializer] {
     override def get(): ActorMaterializer = ActorMaterializer()(system)
   }
 
@@ -54,11 +55,12 @@ object ClusterSystemModule extends LazyLogging {
     new AbstractModule with ScalaModule {
       override def configure(): Unit = {
         bind[Cluster].toProvider[ClusterProvider].asEagerSingleton()
+        bind[ClusterSingletonBuilder].annotatedWithName("cluster_actor_builder").to[ClusterSingletonBuilderImpl]
         bind[SimpleClusterListener]
       }
     }
 
-  class ClusterProvider @Inject() (system: ActorSystem) extends Provider[Cluster] {
+  class ClusterProvider @Inject()(system: ActorSystem) extends Provider[Cluster] {
     override def get(): Cluster = Cluster(system)
   }
 

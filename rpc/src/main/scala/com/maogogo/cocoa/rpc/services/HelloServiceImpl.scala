@@ -16,22 +16,18 @@
 
 package com.maogogo.cocoa.rpc.services
 
-import akka.persistence.PersistentActor
+import com.google.inject.Inject
 
-class Worker extends PersistentActor {
+import scala.concurrent.{ ExecutionContext, Future }
 
-  def test = {
-    //    println("=" * 50)
-    //    println(testActor.ref.path)
-    //
-    //    // actor.ref ! PoisonPill
-    //
-    //    actor.ref ! "hahaha"
-  }
+class HelloServiceImpl @Inject() (
+  implicit
+  ex: ExecutionContext) extends HelloService {
 
-  override def receiveRecover: Receive = ???
-
-  override def receiveCommand: Receive = ???
-
-  override def persistenceId: String = ???
+  override def sayHi(s: String): Future[String] = //s"hello : ${s}"
+    Future {
+      println("name ===>>>" + s)
+      // HelloPoJo()
+      s"hello : ${s}"
+    }
 }

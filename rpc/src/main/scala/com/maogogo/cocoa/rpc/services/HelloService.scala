@@ -16,22 +16,12 @@
 
 package com.maogogo.cocoa.rpc.services
 
-import akka.persistence.PersistentActor
+import scala.concurrent.Future
 
-class Worker extends PersistentActor {
+trait HelloService {
 
-  def test = {
-    //    println("=" * 50)
-    //    println(testActor.ref.path)
-    //
-    //    // actor.ref ! PoisonPill
-    //
-    //    actor.ref ! "hahaha"
-  }
+  def sayHi(s: String): Future[String]
 
-  override def receiveRecover: Receive = ???
-
-  override def receiveCommand: Receive = ???
-
-  override def persistenceId: String = ???
 }
+
+case class HelloPoJo(name: String)

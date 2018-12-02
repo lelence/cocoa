@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common.actor
 
-import akka.persistence.PersistentActor
+import akka.actor.SupervisorStrategy._
+import akka.actor.{ Actor, OneForOneStrategy, SupervisorStrategy }
 
-class Worker extends PersistentActor {
+trait NodeActor {
+  self: Actor ⇒
 
-  def test = {
-    //    println("=" * 50)
-    //    println(testActor.ref.path)
-    //
-    //    // actor.ref ! PoisonPill
-    //
-    //    actor.ref ! "hahaha"
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
+    case ActorRestartAction => Restart
+    case ActorResumeAction => Resume
+    case ActorStopAction => Stop
+    case ActorEscalateAction ⇒ Escalate
   }
 
-  override def receiveRecover: Receive = ???
+  override def receive: Receive = {
+    case ex: Exception ⇒ throw ex
+    case _ ⇒ context become doReceive
+  }
 
-  override def receiveCommand: Receive = ???
+  def doReceive: Receive
 
-  override def persistenceId: String = ???
 }

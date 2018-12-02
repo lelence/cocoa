@@ -14,26 +14,24 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc.services
+package com.maogogo.cocoa.common.cluster
 
-import akka.actor.{ Actor, ActorRef, ActorSystem }
+import akka.actor.ActorRef
+import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import com.google.inject.name.Named
-import com.maogogo.cocoa.common.inject.ActorInstance
-import javax.inject.Inject
+import com.maogogo.cocoa.common.Constants
 
-import scala.concurrent.Future
+trait ProxyActor {
+  def ref(named: String): ProxyActorProvider
+}
 
-class HelloActor @Inject() (testActor: ActorInstance[TestActor]) extends Actor {
+class ProxyActorProvider @Inject()(
+  @Assisted named: String,
+  @Named("akka_cluster_routees") proxyMap: Map[String, ActorRef]) {
 
-  //    val testActor = injector[Ac]
+  def get: ActorRef = option get
 
-  // val testActor = injectorRef("dudu")
-  // injectorRef("dudu")
+  def option: Option[ActorRef] = proxyMap.get(named)
 
-  override def receive: Receive = {
-    case s: String ⇒
-      println("ss ==>>>" + s)
-      testActor.ref ! "dudududududu"
-    // sender() ! Future.successful("Hello: " + s)
-  }
 }

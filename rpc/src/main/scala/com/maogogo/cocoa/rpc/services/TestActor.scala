@@ -16,11 +16,7 @@
 
 package com.maogogo.cocoa.rpc.services
 
-import akka.actor.SupervisorStrategy._
-import akka.actor.{ Actor, OneForOneStrategy }
-import com.maogogo.cocoa.rpc.TestException
-
-import scala.concurrent.duration._
+import akka.actor.Actor
 
 class TestActor extends Actor {
 

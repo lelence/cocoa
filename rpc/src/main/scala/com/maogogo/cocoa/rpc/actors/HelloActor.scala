@@ -14,8 +14,25 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.common.utils
+package com.maogogo.cocoa.rpc.actors
 
-object MD5 {
+import akka.actor.SupervisorStrategy._
+import akka.actor.{ Actor, OneForOneStrategy }
+import com.maogogo.cocoa.common.actor.NodeActor
+import com.maogogo.cocoa.rpc._
+
+class HelloActor extends Actor with NodeActor {
+
+  override def preStart(): Unit = {
+    println("===restart>>" + self.path)
+  }
+
+  import com.github.nscala_time.time.Imports._
+
+  override def doReceive: Receive = {
+    case s: String ⇒
+      println("===>>>>" + self.path)
+      println(DateTime.now().toString + " ==>>" + s)
+  }
 
 }

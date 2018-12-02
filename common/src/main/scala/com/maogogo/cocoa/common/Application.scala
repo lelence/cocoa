@@ -24,16 +24,16 @@ trait Application {
 
   //  import collection.mutable.Map
   /**
-   * sbt "project/run -p=2552"
-   * sbt "project/run --port 2552"
-   *
-   * cocoa 1.0
-   * Usage :
-   *
-   * -p, --port Int server port
-   * -s, --seeds Seq[String] cluster seeds
-   * -r, --role Seq[String] cluster role
-   */
+    * sbt "project/run -p=2552"
+    * sbt "project/run --port 2552"
+    *
+    * cocoa 1.0
+    * Usage :
+    *
+    * -p, --port Int server port
+    * -s, --seeds Seq[String] cluster seeds
+    * -r, --role Seq[String] cluster role
+    */
 
   val parser: CommandSettings ⇒ Unit
 
@@ -57,7 +57,7 @@ trait Application {
 
     }.parse(args, CommandSettings()) match {
       case Some(s) ⇒
-        parser(s); println(logo)
+        parser(s); println(logo);
       case _ ⇒
     }
   }
@@ -65,6 +65,6 @@ trait Application {
 }
 
 case class CommandSettings(
-  port: Int = 2552,
+  port: Int = 0,
   seeds: Seq[String] = Seq.empty,
   roles: Seq[String] = Seq.empty)

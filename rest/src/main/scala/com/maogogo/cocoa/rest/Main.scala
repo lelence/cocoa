@@ -16,13 +16,16 @@
 
 package com.maogogo.cocoa.rest
 
+import akka.actor.ActorRef
+import com.google.inject.Provider
+import com.google.inject.assistedinject.FactoryModuleBuilder
+import com.maogogo.cocoa.common.cluster.ProxyActor
+import com.maogogo.cocoa.common.modules.ClusterProxyModule
 import com.maogogo.cocoa.common.{ Application, CommandSettings, GuiceAkka }
 import com.maogogo.cocoa.rest.http.HttpServer
 import com.typesafe.config.ConfigFactory
 
 object Main extends Application {
-
-  import net.codingwell.scalaguice.InjectorExtensions._
 
   override val parser = (settings: CommandSettings) ⇒ {
 
@@ -33,18 +36,27 @@ object Main extends Application {
         s"""
            |akka.remote.netty.tcp.port=${settings.port}
            |akka.remote.netty.tcp.hostname="127.0.0.1"
-           |akka.cluster.seed-nodes=[$seeds]
+           |akka.cluster.seed-nodes=["akka.tcp://MyClusterSystem@127.0.0.1:2555"]
            """.stripMargin)
       .withFallback(ConfigFactory.load())
 
-    // val injector = GuiceAkka(true).injector()
+    //    val uu = new FactoryModuleBuilder()
+    //      .implement(classOf[Provider[ActorRef]], classOf[ProxyActorProvider]).build(classOf[ProxyActorFactory])
 
-    //    GuiceAkka().cluster()
+    val injector = GuiceAkka(true).config(config).modules(ServicesModule, ClusterProxyModule()).injector()
 
-    //    val injector = GuiceAkka(config, ServicesModule)
+    import net.codingwell.scalaguice.InjectorExtensions._
+
     //
-    //    injector.instance[HttpServer]
+    injector.instance[HttpServer]
 
+    val dd = injector.getInstance(classOf[ProxyActor])
+
+    println("ddd 11===>>" + dd.ref("HelloActor").get)
+
+    println("ddd 22===>>" + dd.ref("HelloActor").get)
+
+    // println("ddd ==>>" + dd)
   }
 
   lazy val logo =
