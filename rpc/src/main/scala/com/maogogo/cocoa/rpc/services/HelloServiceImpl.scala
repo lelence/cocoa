@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.common.utils
+package com.maogogo.cocoa.rpc.services
 
-object MD5 {
+import com.google.inject.Inject
 
+import scala.concurrent.{ ExecutionContext, Future }
+
+class HelloServiceImpl @Inject() (
+  implicit
+  ex: ExecutionContext) extends HelloService {
+
+  override def sayHi(s: String): Future[String] = //s"hello : ${s}"
+    Future {
+      println("name ===>>>" + s)
+      // HelloPoJo()
+      s"hello : ${s}"
+    }
 }

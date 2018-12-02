@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.rpc
+package com.maogogo.cocoa.rpc.services
 
-case class TestException(msg: String) extends Exception(msg)
+import scala.concurrent.Future
+
+trait HelloService {
+
+  def sayHi(s: String): Future[String]
+
+}
+
+case class HelloPoJo(name: String)

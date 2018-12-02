@@ -23,11 +23,11 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Manifest => ClassTag, TypeTag
- * ClassManifest => ClassTag
- * scala.Predef
- *
- */
+  * Manifest => ClassTag, TypeTag
+  * ClassManifest => ClassTag
+  * scala.Predef
+  *
+  */
 final object Reflection {
 
   private lazy val defPackage = "com.maogogo.cocoa"

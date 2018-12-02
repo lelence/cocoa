@@ -19,18 +19,18 @@ package com.maogogo.cocoa.common
 object Constants {
 
   /**
-   * named for cluster actor map
-   */
+    * named for cluster actor map
+    */
   lazy val cluster_actor_map = "cluster_actor_map"
 
   /**
-   * named for cluster proxy routees
-   */
+    * named for cluster proxy routees
+    */
   lazy val cluster_proxy_routees = "cluster_proxy_routees"
 
   /**
-   * key for akka cluster routees
-   */
+    * key for akka cluster routees
+    */
   lazy val akka_cluster_routees = "akka.cluster.routees"
 
 }

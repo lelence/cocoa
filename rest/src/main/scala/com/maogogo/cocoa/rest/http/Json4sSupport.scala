@@ -29,7 +29,7 @@ trait Json4sSupport extends de.heikoseeberger.akkahttpjson4s.Json4sSupport {
 private class EmptyValueSerializer
   extends CustomSerializer[String](
     _ ⇒
-      ( {
+      ({
         case JNull ⇒ ""
         case JString(x) => x
         case JObject(x) ⇒

@@ -43,7 +43,7 @@ abstract class RpcSpec extends TestKit(ActorSystem("MySpec", ConfigFactory.load(
   //  import scala.reflect.ClassTag
   //  import scala.reflect._
 
-  def actorRef[T <: Actor : Manifest](ps: Any*)(implicit m: Manifest[T]) =
+  def actorRef[T <: Actor: Manifest](ps: Any*)(implicit m: Manifest[T]) =
     system.actorOf(Props(m.runtimeClass, ps: _*))
 
 }

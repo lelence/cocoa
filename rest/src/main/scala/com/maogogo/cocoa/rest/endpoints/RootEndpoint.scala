@@ -29,7 +29,7 @@ import com.maogogo.cocoa.common.cluster.ProxyActor
 
 import scala.concurrent.duration._
 
-class RootEndpoint @Inject()(proxy: ProxyActor) extends Json4sSupport with LazyLogging {
+class RootEndpoint @Inject() (proxy: ProxyActor) extends Json4sSupport with LazyLogging {
 
   implicit val timeout = Timeout(3 seconds)
 

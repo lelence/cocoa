@@ -19,7 +19,8 @@ package com.maogogo.cocoa.common.actor
 import akka.actor.SupervisorStrategy._
 import akka.actor.{ Actor, OneForOneStrategy, SupervisorStrategy }
 
-trait NodeActor extends Actor {
+trait NodeActor {
+  self: Actor ⇒
 
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
     case ActorRestartAction => Restart

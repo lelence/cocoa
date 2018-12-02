@@ -23,7 +23,7 @@ import com.maogogo.cocoa.rest.endpoints.RootEndpoint
 import com.typesafe.scalalogging.LazyLogging
 import javax.inject.Inject
 
-class HttpServer @Inject()(root: RootEndpoint)(
+class HttpServer @Inject() (root: RootEndpoint)(
   implicit
   system: ActorSystem,
   mat: ActorMaterializer) extends LazyLogging {

@@ -26,31 +26,32 @@ trait ActorBuilder {
     system: ActorSystem): ActorRef
 }
 
-class ActorBuilderImpl extends ActorBuilder {
+//
+//class ActorBuilderImpl extends ActorBuilder {
+//
+//  def apply(provider: Provider[_ <: Actor], named: String)(
+//    implicit
+//    system: ActorSystem): ActorRef = {
+//
+//    // Props.empty
+//    system.actorOf(Props(provider.get()), named)
+//  }
+//
+//}
 
-  def apply(provider: Provider[_ <: Actor], named: String)(
-    implicit
-    system: ActorSystem): ActorRef = {
-
-    // Props.empty
-    system.actorOf(Props(provider.get()), named)
-  }
-
-}
-
-class ClusterActorBuilderImpl extends ActorBuilder {
-
-  def apply(provider: Provider[_ <: Actor], named: String)(
-    implicit
-    system: ActorSystem): ActorRef = {
-
-    system.actorOf(
-      ClusterSingletonManager.props(
-        singletonProps = Props(provider.get),
-        terminationMessage = PoisonPill,
-        settings = ClusterSingletonManagerSettings(system)),
-      named)
-  }
-
-}
+//class ClusterActorBuilderImpl extends ActorBuilder {
+//
+//  def apply(provider: Provider[_ <: Actor], named: String)(
+//    implicit
+//    system: ActorSystem): ActorRef = {
+//
+//    system.actorOf(
+//      ClusterSingletonManager.props(
+//        singletonProps = Props(provider.get),
+//        terminationMessage = PoisonPill,
+//        settings = ClusterSingletonManagerSettings(system)),
+//      named)
+//  }
+//
+//}
 

@@ -20,7 +20,9 @@ import akka.actor.{ Actor, ActorRef, ActorSystem, PoisonPill, Props }
 import akka.cluster.Cluster
 import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings }
 import com.google.inject._
+import com.google.inject.matcher.Matchers
 import com.google.inject.name.{ Named, Names }
+import com.google.inject.spi.{ TypeEncounter, TypeListener }
 import com.maogogo.cocoa.common.cluster.ClusterActorRefFactory
 import com.maogogo.cocoa.rpc.node.NodeHttpServer
 //import com.maogogo.cocoa.common.inject.{ ActorBuilder }
@@ -30,6 +32,8 @@ import net.codingwell.scalaguice.{ ScalaMapBinder, ScalaModule }
 class ServicesModule extends AbstractModule with ScalaModule {
 
   override def configure(): Unit = {
+
+    bindListener(Matchers.any())
 
     val factory = new ClusterActorRefFactory(binder)
     factory.bindActor[HelloActor] //("HelloActorSS")

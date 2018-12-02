@@ -20,14 +20,15 @@ import akka.actor.ActorRef
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import com.google.inject.name.Named
+import com.maogogo.cocoa.common.Constants
 
 trait ProxyActor {
   def ref(named: String): ProxyActorProvider
 }
 
-class ProxyActorProvider @Inject() (
+class ProxyActorProvider @Inject()(
   @Assisted named: String,
-  @Named("cluster_proxy_routees") proxyMap: Map[String, ActorRef]) {
+  @Named("akka_cluster_routees") proxyMap: Map[String, ActorRef]) {
 
   def get: ActorRef = option get
 

@@ -25,10 +25,10 @@ import scala.reflect.{ ClassTag, _ }
 trait AssistedInjectFactoryScalaModule[B <: Binder] extends Module {
   self: InternalModule[B] =>
 
-  protected[this] def bindFactory[C <: Any: ClassTag, F: ClassTag](): Unit =
+  protected[this] def bindFactory[C <: Any : ClassTag, F: ClassTag](): Unit =
     bindFactory[C, C, F]()
 
-  protected[this] def bindFactory[I: ClassTag, C <: I: ClassTag, F: ClassTag](): Unit =
+  protected[this] def bindFactory[I: ClassTag, C <: I : ClassTag, F: ClassTag](): Unit =
     binderAccess
       .install(
         new FactoryModuleBuilder()

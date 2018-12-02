@@ -161,7 +161,7 @@ class StreamMessageSpec extends RpcSpec {
   "test7" in {
 
     val source: Source[Double, ActorRef] =
-    // will not fail of the buffer size is 0 = no buffer -> no overflow -> no failure
+      // will not fail of the buffer size is 0 = no buffer -> no overflow -> no failure
       Source.actorRef[String](1, OverflowStrategy.fail).map(_ => Random.nextDouble())
 
     val sink: Sink[Double, Future[Done]] = Sink.foreach { e =>

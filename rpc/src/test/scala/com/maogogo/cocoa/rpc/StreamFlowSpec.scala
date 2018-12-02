@@ -36,10 +36,9 @@ class StreamFlowSpec extends RpcSpec {
     import GraphDSL.Implicits._
 
     val foldFlow: Flow[Int, Int, Future[Int]] =
-      Flow.fromGraph(GraphDSL.create(Sink.fold[Int, Int](0)(_ + _)) { implicit builder ⇒
-        fold ⇒
-          // val dd: SinkShape[Int] = fold
-          FlowShape(fold.in, builder.materializedValue.mapAsync(4)(identity).outlet)
+      Flow.fromGraph(GraphDSL.create(Sink.fold[Int, Int](0)(_ + _)) { implicit builder ⇒ fold ⇒
+        // val dd: SinkShape[Int] = fold
+        FlowShape(fold.in, builder.materializedValue.mapAsync(4)(identity).outlet)
       })
 
     // Flow.fromSinkAndSource()

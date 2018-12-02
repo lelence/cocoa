@@ -19,6 +19,7 @@ package com.maogogo.cocoa.common.modules
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.cluster.singleton.{ ClusterSingletonProxy, ClusterSingletonProxySettings }
 import com.google.inject.{ AbstractModule, Binder, Provider }
+import com.maogogo.cocoa.common.Constants
 import com.maogogo.cocoa.common.cluster.{ ProxyActor, ProxyActorProvider }
 import com.typesafe.config.Config
 import javax.inject.Inject
@@ -31,7 +32,7 @@ object ClusterProxyModule {
       override def configure(): Unit = {
 
         bind[Map[String, ActorRef]]
-          .annotatedWithName("cluster_proxy_routees")
+          .annotatedWithName(Constants.akka_cluster_routees)
           .toProvider[ProxyRouteesProvider]
           .asEagerSingleton()
 
@@ -40,7 +41,7 @@ object ClusterProxyModule {
     }
   }
 
-  class ProxyRouteesProvider @Inject() (
+  class ProxyRouteesProvider @Inject()(
     config: Config,
     system: ActorSystem) extends Provider[Map[String, ActorRef]] {
 

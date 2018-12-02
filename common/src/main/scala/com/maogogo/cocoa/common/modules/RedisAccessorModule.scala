@@ -33,7 +33,7 @@ object RedisAccessorModule {
     }
   }
 
-  private class RedisAccessorProvider @Inject() (
+  private class RedisAccessorProvider @Inject()(
     implicit
     system: ActorSystem) extends Provider[ReidsByteStringAccessor] {
     override def get(): ReidsByteStringAccessor = {

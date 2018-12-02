@@ -21,7 +21,7 @@ import akka.actor.{ Actor, OneForOneStrategy }
 import com.maogogo.cocoa.common.actor.NodeActor
 import com.maogogo.cocoa.rpc._
 
-class HelloActor extends NodeActor {
+class HelloActor extends Actor with NodeActor {
 
   override def preStart(): Unit = {
     println("===restart>>" + self.path)
