@@ -16,24 +16,26 @@
 
 package com.maogogo.cocoa.common.cluster
 
-import akka.actor.{ Actor, ActorRef }
+import akka.actor.{Actor, ActorRef}
 import akka.cluster.Cluster
 import com.google.inject._
-import com.google.inject.name.{ Named, Names }
+import com.google.inject.name.{Named, Names}
 import com.maogogo.cocoa.common.Constants
 import com.maogogo.cocoa.common.actor.ActorBuilder
-import net.codingwell.scalaguice.{ ScalaMapBinder, ScalaOptionBinder }
+import net.codingwell.scalaguice.{ScalaMapBinder, ScalaOptionBinder}
 
 class ClusterActorRefFactory(parentBinder: Binder) {
 
   private val mBinder = ScalaMapBinder.newMapBinder[String, Option[ActorRef]](
-    parentBinder, Names.named(Constants.cluster_actor_map))
+    parentBinder, Names.named(Constants.cluster_actor_map)
+  )
 
   import scala.reflect.runtime.universe._
 
   def bindActor[T <: Actor : Manifest](
     implicit
-    t: TypeTag[T]): Unit = {
+    t: TypeTag[T]
+  ): Unit = {
 
     val key = t.tpe.typeSymbol.name.encodedName.toString
     mBinder.addBinding(key).toProvider[ClusterSingletonInstance[T]].asEagerSingleton()
@@ -46,9 +48,11 @@ class ClusterActorRefFactory(parentBinder: Binder) {
 class ClusterSingletonInstance[T <: Actor] @Inject()(
   @Named("cluster_actor_builder") builder: ClusterSingletonBuilder,
   provider: Provider[T],
-  typeLiteral: TypeLiteral[T])(
+  typeLiteral: TypeLiteral[T]
+)(
   implicit
-  cluster: Cluster) extends Provider[Option[ActorRef]] {
+  cluster: Cluster
+) extends Provider[Option[ActorRef]] {
 
   private implicit val system = cluster.system
 

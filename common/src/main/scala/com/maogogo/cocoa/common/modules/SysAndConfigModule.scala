@@ -19,9 +19,9 @@ package com.maogogo.cocoa.common.modules
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.stream.ActorMaterializer
-import com.google.inject.{ AbstractModule, Provider }
-import com.maogogo.cocoa.common.cluster.{ ClusterSingletonBuilder, ClusterSingletonBuilderImpl, SimpleClusterListener }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.google.inject.{AbstractModule, Provider}
+import com.maogogo.cocoa.common.cluster.{ClusterSingletonBuilder, ClusterSingletonBuilderImpl, SimpleClusterListener}
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import javax.inject.Inject
 import net.codingwell.scalaguice.ScalaModule

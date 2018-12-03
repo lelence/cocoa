@@ -17,10 +17,10 @@
 package com.maogogo.cocoa.common.modules
 
 import com.google.inject.assistedinject.FactoryModuleBuilder
-import com.google.inject.{ Binder, Module }
+import com.google.inject.{Binder, Module}
 import net.codingwell.scalaguice.InternalModule
 
-import scala.reflect.{ ClassTag, _ }
+import scala.reflect.{ClassTag, _}
 
 trait AssistedInjectFactoryScalaModule[B <: Binder] extends Module {
   self: InternalModule[B] =>
@@ -30,8 +30,9 @@ trait AssistedInjectFactoryScalaModule[B <: Binder] extends Module {
 
   protected[this] def bindFactory[I: ClassTag, C <: I : ClassTag, F: ClassTag](): Unit =
     binderAccess
-      .install(
-        new FactoryModuleBuilder()
-          .implement(classTag[I].runtimeClass.asInstanceOf[Class[I]], classTag[C].runtimeClass.asInstanceOf[Class[C]])
-          .build(classTag[F].runtimeClass.asInstanceOf[Class[F]]))
+    .install(
+      new FactoryModuleBuilder()
+        .implement(classTag[I].runtimeClass.asInstanceOf[Class[I]], classTag[C].runtimeClass.asInstanceOf[Class[C]])
+        .build(classTag[F].runtimeClass.asInstanceOf[Class[F]])
+    )
 }

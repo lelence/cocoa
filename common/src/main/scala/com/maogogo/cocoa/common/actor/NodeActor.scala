@@ -17,21 +17,21 @@
 package com.maogogo.cocoa.common.actor
 
 import akka.actor.SupervisorStrategy._
-import akka.actor.{ Actor, OneForOneStrategy, SupervisorStrategy }
+import akka.actor.{Actor, OneForOneStrategy, SupervisorStrategy}
 
 trait NodeActor {
   self: Actor ⇒
 
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
-    case ActorRestartAction => Restart
-    case ActorResumeAction => Resume
-    case ActorStopAction => Stop
+    case ActorRestartAction  => Restart
+    case ActorResumeAction   => Resume
+    case ActorStopAction     => Stop
     case ActorEscalateAction ⇒ Escalate
   }
 
   override def receive: Receive = {
     case ex: Exception ⇒ throw ex
-    case _ ⇒ context become doReceive
+    case _             ⇒ context become doReceive
   }
 
   def doReceive: Receive

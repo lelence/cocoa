@@ -66,7 +66,8 @@ class SocketIORoutee extends Actor with LazyLogging {
           val rValue = JsonMethods.mapper.convertValue(a.t, a.m.runtimeClass)
           JsonMethods.mapper.convertValue(
             WrapperAckMessage(rValue),
-            classOf[java.util.Map[String, Any]])
+            classOf[java.util.Map[String, Any]]
+          )
         case _ ⇒ throw new Exception(s"ActorRef [${actorRef.path}] return message not support")
       }
 
@@ -76,7 +77,8 @@ class SocketIORoutee extends Actor with LazyLogging {
         logger.error(t.getMessage, t)
         JsonMethods.mapper.convertValue(
           WrapperAckMessage(None.orNull, Some(ErrorMessage(code = 500, message = t.getMessage))),
-          classOf[java.util.Map[String, Any]])
+          classOf[java.util.Map[String, Any]]
+        )
     }
 
   }

@@ -17,11 +17,11 @@
 package com.maogogo.cocoa.common.modules
 
 import akka.actor.ActorSystem
-import com.google.inject.{ AbstractModule, Provider }
+import com.google.inject.{AbstractModule, Provider}
 import com.maogogo.cocoa.common.cache.ReidsByteStringAccessor
 import javax.inject.Inject
 import net.codingwell.scalaguice.ScalaModule
-import redis.{ RedisClient, RedisCluster, RedisCommands, RedisServer }
+import redis.{RedisClient, RedisCluster, RedisCommands, RedisServer}
 
 object RedisAccessorModule {
 
@@ -35,13 +35,14 @@ object RedisAccessorModule {
 
   private class RedisAccessorProvider @Inject()(
     implicit
-    system: ActorSystem) extends Provider[ReidsByteStringAccessor] {
+    system: ActorSystem
+  ) extends Provider[ReidsByteStringAccessor] {
     override def get(): ReidsByteStringAccessor = {
       import scala.collection.JavaConverters._
 
       val config = system.settings.config
 
-      val redisSettings = config.getObjectList("redis").asScala.map(_.toConfig).map { cfg ⇒
+      val redisSettings = config.getObjectList("redis").asScala.map(_.toConfig).map {cfg ⇒
         val host = cfg.getString("host")
         val port = cfg.getInt("port")
         (host, port)
@@ -51,7 +52,7 @@ object RedisAccessorModule {
 
       val redisCommand: RedisCommands = redisSettings match {
         case Seq((h, p)) ⇒ RedisClient(host = h, port = p)
-        case Seq(_*) ⇒
+        case Seq(_*)     ⇒
           RedisCluster(redisSettings.map {
             case (h, p) ⇒ RedisServer(host = h, port = p)
           })

@@ -17,7 +17,7 @@
 package com.maogogo.cocoa.common
 
 import com.google.inject._
-import com.maogogo.cocoa.common.modules.{ ClusterSystemModule, SysAndConfigModule }
+import com.maogogo.cocoa.common.modules.{ClusterSystemModule, SysAndConfigModule}
 import com.typesafe.config.Config
 
 final object GuiceAkka {
@@ -35,7 +35,7 @@ final object GuiceAkka {
 private[common] class GuiceAkka(ms: Seq[Module], config: Option[Config] = None, isCluster: Boolean = false) {
 
   def injector(): Injector =
-    Guice.createInjector((ms :+ SysAndConfigModule(config)): _*)
+    Guice.createInjector(( ms :+ SysAndConfigModule(config) ): _*)
 
   def config(c: Config): GuiceAkka = new GuiceAkka(ms, Some(c), isCluster)
 

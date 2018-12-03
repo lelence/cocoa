@@ -16,14 +16,15 @@
 
 package com.maogogo.cocoa.common.actor
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, PoisonPill, Props }
-import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings }
+import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
+import akka.cluster.singleton.{ClusterSingletonManager, ClusterSingletonManagerSettings}
 import com.google.inject._
 
 trait ActorBuilder {
   def apply(provider: Provider[_ <: Actor], named: String)(
     implicit
-    system: ActorSystem): ActorRef
+    system: ActorSystem
+  ): ActorRef
 }
 
 //

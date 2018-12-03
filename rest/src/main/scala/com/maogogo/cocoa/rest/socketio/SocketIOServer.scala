@@ -29,7 +29,8 @@ import scala.concurrent.duration._
 
 class SocketIOServer(eventMessages: Seq[IOMessage[_]], port: Int, pool: Int = 10)(
   implicit
-  system: ActorSystem) extends LazyLogging {
+  system: ActorSystem
+) extends LazyLogging {
 
   implicit val timeout = Timeout(3 seconds)
 
@@ -52,7 +53,7 @@ class SocketIOServer(eventMessages: Seq[IOMessage[_]], port: Int, pool: Int = 10
 
         eventMessages foreach {
           case e: EventMessage[_] ⇒ router ! e.copyTo(ackSender, json)
-          case t ⇒ SocketIOClient.add(client, event, t.parameter(json))
+          case t                  ⇒ SocketIOClient.add(client, event, t.parameter(json))
         }
       }
     })
@@ -60,7 +61,7 @@ class SocketIOServer(eventMessages: Seq[IOMessage[_]], port: Int, pool: Int = 10
     // 这里要启动定时任务
     eventMessages.filter {
       case _: BroadcastMessage[_] ⇒ true
-      case _ ⇒ false
+      case _                      ⇒ false
     } foreach (router ! _)
 
     server.start()

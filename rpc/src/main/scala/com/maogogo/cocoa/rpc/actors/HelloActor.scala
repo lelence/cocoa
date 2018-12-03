@@ -33,6 +33,12 @@ class HelloActor extends Actor with NodeActor {
     case s: String ⇒
       println("===>>>>" + self.path)
       println(DateTime.now().toString + " ==>>" + s)
+    case dddddd: Int ⇒
+      val d = Seq()
+      d match {
+        case head :: tail ⇒
+        case h :: Nil     ⇒
+      }
   }
 
 }

@@ -46,7 +46,8 @@ final class ProtoBufByteStringSerializer[T <: ProtoBuf[T]] extends KeySerializer
 
 final class ProtoBufByteStringDeserializer[T <: ProtoBuf[T]](
   implicit
-  c: scalapb.GeneratedMessageCompanion[T]) extends ValueSerializer[T, ByteString] {
+  c: scalapb.GeneratedMessageCompanion[T]
+) extends ValueSerializer[T, ByteString] {
 
   override def serialize(v: T): ByteString = ByteString.fromArray(v.toByteArray)
 

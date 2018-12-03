@@ -24,11 +24,13 @@ import com.typesafe.scalalogging.LazyLogging
 import akka.http.scaladsl.server.Directives._
 import com.google.inject.Inject
 import com.google.inject.name.Named
+import com.maogogo.cocoa.common.Constants
 
-class NodeHttpServer @Inject() (@Named("cluster_actor_map") actorMap: Map[String, ActorRef])(
+class NodeHttpServer @Inject() (@Named(Constants.cluster_actor_map) actorMap: Map[String, ActorRef])(
   implicit
   system: ActorSystem,
-  mat: ActorMaterializer) extends Json4sSupport with LazyLogging {
+  mat:    ActorMaterializer
+) extends Json4sSupport with LazyLogging {
 
   import system.dispatcher
 
@@ -50,7 +52,7 @@ class NodeHttpServer @Inject() (@Named("cluster_actor_map") actorMap: Map[String
 
   bind.onComplete {
     case scala.util.Success(binding) ⇒ logger.info(s"node manager http server started! ${binding.localAddress}")
-    case scala.util.Failure(ex) ⇒ logger.error("node manager http server start failed!", ex)
+    case scala.util.Failure(ex)      ⇒ logger.error("node manager http server start failed!", ex)
   }
 
 }

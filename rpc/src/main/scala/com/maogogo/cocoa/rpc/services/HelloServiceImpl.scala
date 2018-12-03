@@ -22,9 +22,13 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class HelloServiceImpl @Inject() (
   implicit
-  ex: ExecutionContext) extends HelloService {
+  ex: ExecutionContext
+) extends HelloService {
 
-  override def sayHi(s: String): Future[String] = //s"hello : ${s}"
+  override def sayHi(
+    s: String,
+    q: String
+  ): Future[String] = //s"hello : ${s}"
     Future {
       println("name ===>>>" + s)
       // HelloPoJo()

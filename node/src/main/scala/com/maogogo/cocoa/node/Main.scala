@@ -14,25 +14,8 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.common.cluster
+package com.maogogo.cocoa.node
 
-import akka.actor.ActorRef
-import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
-import com.google.inject.name.Named
-import com.maogogo.cocoa.common.Constants
-
-trait ProxyActor {
-  def ref(named: String): ProxyActorProvider
-}
-
-class ProxyActorProvider @Inject()(
-  @Assisted named: String,
-  @Named("akka_cluster_routees") proxyMap: Map[String, ActorRef]
-) {
-
-  def get: ActorRef = option get
-
-  def option: Option[ActorRef] = proxyMap.get(named)
+object Main extends App {
 
 }

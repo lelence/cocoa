@@ -33,7 +33,7 @@ class ServicesModule extends AbstractModule with ScalaModule {
 
   override def configure(): Unit = {
 
-    bindListener(Matchers.any())
+    // bindListener(Matchers.any())
 
     val factory = new ClusterActorRefFactory(binder)
     factory.bindActor[HelloActor] //("HelloActorSS")

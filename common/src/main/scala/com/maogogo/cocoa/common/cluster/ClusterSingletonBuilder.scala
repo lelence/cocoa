@@ -16,15 +16,16 @@
 
 package com.maogogo.cocoa.common.cluster
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, PoisonPill, Props }
-import akka.cluster.singleton.{ ClusterSingletonManager, ClusterSingletonManagerSettings }
+import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
+import akka.cluster.singleton.{ClusterSingletonManager, ClusterSingletonManagerSettings}
 import com.google.inject.Provider
 
 trait ClusterSingletonBuilder {
 
   def apply(provider: Provider[_ <: Actor], named: String, role: Option[String] = None)(
     implicit
-    system: ActorSystem): ActorRef
+    system: ActorSystem
+  ): ActorRef
 
 }
 
@@ -32,13 +33,16 @@ class ClusterSingletonBuilderImpl extends ClusterSingletonBuilder {
 
   override def apply(provider: Provider[_ <: Actor], named: String, role: Option[String] = None)(
     implicit
-    system: ActorSystem): ActorRef = {
+    system: ActorSystem
+  ): ActorRef = {
 
     system.actorOf(
       ClusterSingletonManager.props(
         singletonProps = Props(provider.get),
         terminationMessage = PoisonPill,
-        settings = ClusterSingletonManagerSettings(system).withRole(role)),
-      named)
+        settings = ClusterSingletonManagerSettings(system).withRole(role)
+      ),
+      named
+    )
   }
 }

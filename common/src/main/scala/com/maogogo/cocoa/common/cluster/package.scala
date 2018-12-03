@@ -14,25 +14,16 @@
  * limitations under the License.
  */
 
-package com.maogogo.cocoa.common.cluster
+package com.maogogo.cocoa.common
 
-import akka.actor.ActorRef
-import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
-import com.google.inject.name.Named
-import com.maogogo.cocoa.common.Constants
+import java.lang.annotation.Annotation
 
-trait ProxyActor {
-  def ref(named: String): ProxyActorProvider
-}
+package object cluster {
 
-class ProxyActorProvider @Inject()(
-  @Assisted named: String,
-  @Named("akka_cluster_routees") proxyMap: Map[String, ActorRef]
-) {
+  class AA extends scala.annotation.StaticAnnotation
 
-  def get: ActorRef = option get
-
-  def option: Option[ActorRef] = proxyMap.get(named)
+  case object AAImpl extends AA with java.lang.annotation.Annotation {
+    override def annotationType() = getClass
+  }
 
 }

@@ -43,35 +43,39 @@ trait HttpClientPool {
       .via(connection)
       .toMat(Sink.foreach({
         case ((Success(resp), p)) => p.success(resp)
-        case ((Failure(e), p)) => p.failure(e)
+        case ((Failure(e), p))    => p.failure(e)
       }))(Keep.left)
       .run()
 
   def dispatcher = (request: HttpRequest) ⇒ {
     val responsePromise = Promise[HttpResponse]()
     queue.offer(request -> responsePromise).flatMap {
-      case QueueOfferResult.Enqueued => responsePromise.future
-      case QueueOfferResult.Dropped => Future.failed(new RuntimeException("Queue overflowed. Try again later."))
+      case QueueOfferResult.Enqueued    => responsePromise.future
+      case QueueOfferResult.Dropped     => Future.failed(new RuntimeException("Queue overflowed. Try again later."))
       case QueueOfferResult.Failure(ex) => Future.failed(ex)
       case QueueOfferResult.QueueClosed => Future.failed(new RuntimeException("Queue was closed (pool shut down) while running the request. Try again later."))
     }
   }
 
   def https(
-    host: String,
-    port: Int = 443,
-    proxy: Option[Boolean] = None)(
+    host:  String,
+    port:  Int             = 443,
+    proxy: Option[Boolean] = None
+  )(
     implicit
-    system: ActorSystem) = {
+    system: ActorSystem
+  ) = {
     Http().cachedHostConnectionPoolHttps(host, port, settings = proxySettings(proxy))
   }
 
   def http(
-    host: String,
-    port: Int = 80,
-    proxy: Option[Boolean] = None)(
+    host:  String,
+    port:  Int             = 80,
+    proxy: Option[Boolean] = None
+  )(
     implicit
-    system: ActorSystem) = {
+    system: ActorSystem
+  ) = {
     Http().cachedHostConnectionPool(host, port, settings = proxySettings(proxy))
   }
 
@@ -79,7 +83,8 @@ trait HttpClientPool {
     proxy match {
       case Some(true) ⇒
         val httpsProxy = ClientTransport.httpsProxy(
-          InetSocketAddress.createUnresolved("127.0.0.1", 1087))
+          InetSocketAddress.createUnresolved("127.0.0.1", 1087)
+        )
         ConnectionPoolSettings(system).withTransport(httpsProxy)
       case _ ⇒ ConnectionPoolSettings(system)
     }

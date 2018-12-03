@@ -20,7 +20,7 @@ import scala.concurrent.Future
 
 trait HelloService {
 
-  def sayHi(s: String): Future[String]
+  def sayHi(s: String, q: String): Future[String]
 
 }
 

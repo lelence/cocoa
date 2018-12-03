@@ -37,7 +37,8 @@ object Main extends Application {
            |akka.remote.netty.tcp.port=${settings.port}
            |akka.remote.netty.tcp.hostname="127.0.0.1"
            |akka.cluster.seed-nodes=["akka.tcp://MyClusterSystem@127.0.0.1:2555"]
-           """.stripMargin)
+           """.stripMargin
+      )
       .withFallback(ConfigFactory.load())
 
     //    val uu = new FactoryModuleBuilder()

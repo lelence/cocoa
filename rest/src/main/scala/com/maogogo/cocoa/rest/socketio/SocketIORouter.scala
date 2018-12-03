@@ -30,7 +30,8 @@ class SocketIORouter(pool: Int) extends Actor {
 
   lazy val replyRoutor = context.actorOf(
     RoundRobinPool(10).props(Props[SocketIORoutee]),
-    s"socketio_routee")
+    s"socketio_routee"
+  )
 
   override def receive: Receive = {
     case b: BroadcastMessage[_] ⇒
@@ -43,7 +44,8 @@ class SocketIORouter(pool: Int) extends Actor {
           // 订阅消息需要定时发送
           val broadcastRoutee = context.actorOf(
             RoundRobinPool(10).props(Props[SocketIORoutee]),
-            s"socket_timer_routee_${Random.nextInt()}")
+            s"socket_timer_routee_${Random.nextInt()}"
+          )
 
           context.system.scheduler.schedule(2 seconds, b.interval seconds, broadcastRoutee, b)
       }

@@ -76,7 +76,9 @@ class RootEndpoint @Inject() (proxy: ProxyActor) extends Json4sSupport with Lazy
         s"""{"jsonrpc":"2.0", "error": {"code": 500, "message": "${
           msg
             .replaceAll("\"", "\\\"")
-        }"}}"""))
+        }"}}"""
+      )
+    )
   }
 
 }

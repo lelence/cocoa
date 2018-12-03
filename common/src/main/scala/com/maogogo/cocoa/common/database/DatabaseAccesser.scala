@@ -17,22 +17,23 @@
 package com.maogogo.cocoa.common.database
 
 import akka.stream.ActorMaterializer
-import akka.stream.alpakka.slick.scaladsl.{ Slick, SlickSession }
-import akka.stream.scaladsl.{ Sink, Source }
-import slick.jdbc.{ GetResult, SQLActionBuilder }
+import akka.stream.alpakka.slick.scaladsl.{Slick, SlickSession}
+import akka.stream.scaladsl.{Sink, Source}
+import slick.jdbc.{GetResult, SQLActionBuilder}
 
 import scala.concurrent.Future
 
 abstract class DatabaseAccesser(
   implicit
   mat: ActorMaterializer,
-  session: SlickSession) {
+  session: SlickSession
+) {
 
   type ResultRow = slick.jdbc.PositionedResult
   type ResultInt = slick.dbio.DBIO[Int]
 
   def saveOrUpdate[T](params: T*)(implicit fallback: T ⇒ ResultInt): Future[Int] = {
-    Source[T](params.to[collection.immutable.Seq]).via(Slick.flow(fallback)) runReduce (_ + _)
+    Source[T](params.to[collection.immutable.Seq]).via(Slick.flow(fallback)) runReduce ( _ + _ )
   }
 
   implicit class SQL(sql: SQLActionBuilder) {

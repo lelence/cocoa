@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+//import scalariform.formatter.preferences._
 
 object Settings {
 
@@ -13,6 +14,10 @@ object Settings {
       "-language:implicitConversions",
       "-language:postfixOps"),
     startYear := Some(2018),
+    //    scalariformPreferences := scalariformPreferences.value
+    //                              .setPreference(AlignSingleLineCaseStatements, true)
+    //                              .setPreference(DoubleIndentConstructorArguments, true)
+    //                              .setPreference(DanglingCloseParenthesis, Preserve),
     licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
   )
 

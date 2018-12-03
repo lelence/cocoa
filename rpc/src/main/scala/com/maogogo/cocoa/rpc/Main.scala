@@ -21,6 +21,7 @@ import akka.cluster.Cluster
 import akka.util.Timeout
 import com.google.inject.name.Names
 import com.maogogo.cocoa.common.actor.ActorRestartAction
+import com.maogogo.cocoa.common.cluster.AA
 import com.maogogo.cocoa.common.{ Application, CommandSettings, Constants, GuiceAkka }
 import com.maogogo.cocoa.rpc.node.NodeHttpServer
 import com.typesafe.config.ConfigFactory
@@ -53,14 +54,14 @@ object Main extends Application {
 
     import net.codingwell.scalaguice.InjectorExtensions._
 
-    val dd = injector.instance[Map[String, Option[ActorRef]]](Names.named(Constants.cluster_actor_map))
+    val dd = injector.instance[Map[String, Option[ActorRef]], AA]
+
+    // Names.named(Constants.cluster_actor_map)
 
     println(s"""${"=" * 50}${info}\n${"=" * 50}""")
 
     dd.map { k ⇒
-
       println(k)
-
     }
 
     //    val cluster = injector.instance[Cluster]

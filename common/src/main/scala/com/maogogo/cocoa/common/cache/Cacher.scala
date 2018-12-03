@@ -21,14 +21,15 @@ import scala.concurrent.Future
 
 trait Cacher[K, KS, V, VS] {
 
-  val ks: KeySerializer[K, KS]
-  val vs: ValueSerializer[V, VS]
+  val ks      : KeySerializer[K, KS]
+  val vs      : ValueSerializer[V, VS]
   val accessor: Accessor[KS, VS]
 
   implicit def toKeySerializer(k: K): KS = ks.serialize(k)
 
   implicit def toValueDeserializer(
-    vsFuture: Future[Option[VS]]): Future[Option[V]] = vsFuture.map(_.map(vs.deserialize))
+    vsFuture: Future[Option[VS]]
+  ): Future[Option[V]] = vsFuture.map(_.map(vs.deserialize))
 
   implicit def toValueDeserializers(vsFuture: Future[Seq[VS]]): Future[Seq[V]] =
     vsFuture.map(_.map(vs.deserialize))

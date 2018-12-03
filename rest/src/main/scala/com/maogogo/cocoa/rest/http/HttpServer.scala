@@ -26,7 +26,8 @@ import javax.inject.Inject
 class HttpServer @Inject() (root: RootEndpoint)(
   implicit
   system: ActorSystem,
-  mat: ActorMaterializer) extends LazyLogging {
+  mat:    ActorMaterializer
+) extends LazyLogging {
 
   import system.dispatcher
 
@@ -34,7 +35,7 @@ class HttpServer @Inject() (root: RootEndpoint)(
 
   bind.onComplete {
     case scala.util.Success(binding) ⇒ logger.info(s"http server started! ${binding.localAddress}")
-    case scala.util.Failure(ex) ⇒ logger.error("http server start failed!", ex)
+    case scala.util.Failure(ex)      ⇒ logger.error("http server start failed!", ex)
   }
 
 }

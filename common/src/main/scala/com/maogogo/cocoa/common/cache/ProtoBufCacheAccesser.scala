@@ -22,9 +22,10 @@ import com.maogogo.cocoa.common._
 class ProtoBufCacheAccesser[T <: ProtoBuf[T]](
   implicit
   val accessor: ReidsByteStringAccessor,
-  c: scalapb.GeneratedMessageCompanion[T]) extends Cacher[String, String, T, ByteString] {
+  c: scalapb.GeneratedMessageCompanion[T]
+) extends Cacher[String, String, T, ByteString] {
 
-  override val ks: KeySerializer[String, String] = new StringSerializer
+  override val ks: KeySerializer[String, String]  = new StringSerializer
   override val vs: ValueSerializer[T, ByteString] = new ProtoBufByteStringDeserializer[T]
 
 }

@@ -16,11 +16,11 @@
 
 package com.maogogo.cocoa.common.modules
 
-import akka.actor.{ ActorRef, ActorSystem }
-import akka.cluster.singleton.{ ClusterSingletonProxy, ClusterSingletonProxySettings }
-import com.google.inject.{ AbstractModule, Binder, Provider }
+import akka.actor.{ActorRef, ActorSystem}
+import akka.cluster.singleton.{ClusterSingletonProxy, ClusterSingletonProxySettings}
+import com.google.inject.{AbstractModule, Binder, Provider}
 import com.maogogo.cocoa.common.Constants
-import com.maogogo.cocoa.common.cluster.{ ProxyActor, ProxyActorProvider }
+import com.maogogo.cocoa.common.cluster.{ProxyActor, ProxyActorProvider}
 import com.typesafe.config.Config
 import javax.inject.Inject
 import net.codingwell.scalaguice.ScalaModule
@@ -43,7 +43,8 @@ object ClusterProxyModule {
 
   class ProxyRouteesProvider @Inject()(
     config: Config,
-    system: ActorSystem) extends Provider[Map[String, ActorRef]] {
+    system: ActorSystem
+  ) extends Provider[Map[String, ActorRef]] {
 
     import scala.collection.JavaConverters._
 
@@ -53,11 +54,13 @@ object ClusterProxyModule {
         system.actorOf(
           ClusterSingletonProxy.props(
             singletonManagerPath = s"/user/${named}",
-            settings = ClusterSingletonProxySettings(system)),
-          name = s"proxy_${named}")
+            settings = ClusterSingletonProxySettings(system)
+          ),
+          name = s"proxy_${named}"
+        )
       }
 
-      config.getStringList("akka.cluster.routees").asScala.map { path ⇒
+      config.getStringList("akka.cluster.routees").asScala.map {path ⇒
         path → proxy(path, system)
       } toMap
     }

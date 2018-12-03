@@ -27,6 +27,15 @@ lazy val rpc = (project in file("rpc"))
     libraryDependencies ++= dependency4Rpc
   )
 
+lazy val node = (project in file("node"))
+  .enablePlugins(AutomateHeaderPlugin)
+  .dependsOn(common)
+  .enablePlugins(JavaAppPackaging)
+  .settings(
+    basicSettings,
+    libraryDependencies ++= dependency4Rpc
+  )
+
 //lazy val jsonrpc = (project in file("jsonrpc"))
 //  .enablePlugins(AutomateHeaderPlugin)
 //  .enablePlugins(JavaAppPackaging)
@@ -45,6 +54,6 @@ lazy val proto = (project in file("proto"))
   )
 
 lazy val all = (project in file("."))
-  .aggregate(common, rest, rpc, proto)
+  .aggregate(common, rest, rpc, proto, node)
   .withId("cocoa")
 

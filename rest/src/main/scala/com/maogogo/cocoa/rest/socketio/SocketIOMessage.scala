@@ -22,7 +22,8 @@ import org.json4s.jackson.JsonMethods
 
 sealed abstract class IOMessage[T](event: String, actorRef: ActorRef)(
   implicit
-  val t: Manifest[T]) {
+  val t: Manifest[T]
+) {
   private[socketio] def parameter(json: String): Any = {
     if (t == manifest[Unit])
       None.orNull
@@ -33,7 +34,8 @@ sealed abstract class IOMessage[T](event: String, actorRef: ActorRef)(
 
 case class EventMessage[T](event: String, actorRef: ActorRef)(
   implicit
-  t: Manifest[T]) extends IOMessage(event, actorRef) {
+  t: Manifest[T]
+) extends IOMessage(event, actorRef) {
 
   private[socketio] def copyTo(ackSender: AckRequest, json: String) = {
     EventActorMessage(actorRef, ackSender, parameter(json))
@@ -42,12 +44,14 @@ case class EventMessage[T](event: String, actorRef: ActorRef)(
 }
 
 case class BroadcastMessage[T](
-  event: String,
+  event:    String,
   actorRef: ActorRef,
-  interval: Long = -1,
-  replyTo: String)(
+  interval: Long     = -1,
+  replyTo:  String
+)(
   implicit
-  t: Manifest[T]) extends IOMessage(event, actorRef) {
+  t: Manifest[T]
+) extends IOMessage(event, actorRef) {
 
   //  private[socketio] def copyTo(server: SocketIOServer, parameter: Any): BroadcastActorMessage = {
   //    BroadcastActorMessage(server, event, actorRef, interval, replyTo, parameter)
@@ -69,9 +73,10 @@ case class BroadcastMessage[T](
 private[socketio] sealed abstract class ActorMessage(actorRef: ActorRef, parameter: Any)
 
 private[socketio] case class EventActorMessage(
-  actorRef: ActorRef,
+  actorRef:  ActorRef,
   ackSender: AckRequest,
-  parameter: Any)
+  parameter: Any
+)
   extends ActorMessage(actorRef, parameter)
 
 case object BroadcastRequest
